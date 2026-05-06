@@ -1,7 +1,7 @@
 {
   "Name": "PipeWire Volume Mixer",
-  "Author": "OpenDeck Community",
-  "Description": "Wavelink-aehnlicher Mixer fuer PipeWire/WirePlumber",
+  "Author": "RedReaperLp - Raphael Kuschmierz",
+  "Description": "Wavelink-like Mixer for PipeWire/WirePlumber",
   "Version": "1.0.0",
   "Icon": "imgs/plugin",
   "Category": "Audio",
@@ -16,57 +16,9 @@
   ],
   "Actions": [
     {
-      "UUID": "com.opendeck.pipewire.mixer.dbStatus",
-      "Name": "DbStatus",
-      "Tooltip": "Zeigt den Monitor-/Ausgangsstatus als dB-Kachel",
-      "PropertyInspectorPath": "propertyinspector/inspector.html",
-      "SupportedInMultiActions": true,
-      "Controllers": [
-        "Keypad"
-      ],
-      "States": [
-        {
-          "Name": "Default",
-          "Image": "imgs/plugin"
-        }
-      ]
-    },
-    {
-      "UUID": "com.opendeck.pipewire.mixer.increaseBy",
-      "Name": "IncreaseBy",
-      "Tooltip": "Erhoeht Lautstaerke der gewaehlten Spur um einen konfigurierbaren Schritt",
-      "PropertyInspectorPath": "propertyinspector/inspector.html",
-      "SupportedInMultiActions": true,
-      "Controllers": [
-        "Keypad"
-      ],
-      "States": [
-        {
-          "Name": "Default",
-          "Image": "imgs/plugin"
-        }
-      ]
-    },
-    {
-      "UUID": "com.opendeck.pipewire.mixer.decreaseBy",
-      "Name": "DecreaseBy",
-      "Tooltip": "Verringert Lautstaerke der gewaehlten Spur um einen konfigurierbaren Schritt",
-      "PropertyInspectorPath": "propertyinspector/inspector.html",
-      "SupportedInMultiActions": true,
-      "Controllers": [
-        "Keypad"
-      ],
-      "States": [
-        {
-          "Name": "Default",
-          "Image": "imgs/plugin"
-        }
-      ]
-    },
-    {
-      "UUID": "com.opendeck.pipewire.mixer.toggleMute",
-      "Name": "ToggleMute",
-      "Tooltip": "Schaltet Mute der gewaehlten Spur um",
+      "UUID": "com.opendeck.pipewire.mixer",
+      "Name": "PipeWire Mixer",
+      "Tooltip": "Steuert Lautstaerke, Mute oder zeigt den Pegel einer PipeWire-Spur",
       "PropertyInspectorPath": "propertyinspector/inspector.html",
       "SupportedInMultiActions": true,
       "Controllers": [

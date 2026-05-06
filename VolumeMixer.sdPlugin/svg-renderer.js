@@ -1,7 +1,6 @@
 "use strict";
 
-const { clampInt } = require("./audio-service");
-
+const {clampInt} = require("./audio-service");
 
 function isValidHexColor(value) {
     return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value.trim());
@@ -28,27 +27,7 @@ function hexToRgba(hexColor, alpha) {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-function escapeSvgText(value) {
-    return String(value ?? "").replace(/[&<>"']/g, (char) => {
-        if (char === "&") return "&amp;";
-        if (char === "<") return "&lt;";
-        if (char === ">") return "&gt;";
-        if (char === '"') return "&quot;";
-        return "&#39;";
-    });
-}
-
-function clipLabel(value, maxLength = 12) {
-    const raw = String(value || "").trim();
-    if (!raw) return "TRACK";
-    if (raw.length <= maxLength) return raw;
-    return `${raw.slice(0, Math.max(1, maxLength - 1)).trimEnd()}…`;
-}
-
-// -------------------------------------------------------------------------
-// ALTE ICONS (Für Single-Buttons wie dbStatus / toggleMute)
-// -------------------------------------------------------------------------
-function buildOldHeadphoneIcon({ x, y, width, stroke, strokeWidth }) {
+function buildOldHeadphoneIcon({x, y, width, stroke, strokeWidth}) {
     const leftCupX = x + 0.1 * width;
     const rightCupX = x + 0.72 * width;
     const cupY = y + 0.42 * width;
@@ -69,7 +48,7 @@ function buildOldHeadphoneIcon({ x, y, width, stroke, strokeWidth }) {
     ].join("");
 }
 
-function buildMicrophoneIcon({ x, y, width, stroke, strokeWidth }) {
+function buildMicrophoneIcon({x, y, width, stroke, strokeWidth}) {
     const capsuleW = 0.34 * width;
     const capsuleH = 0.5 * width;
     const capsuleX = x + 0.33 * width;
@@ -92,7 +71,7 @@ function buildNodeIcon(settings, options) {
     return buildOldHeadphoneIcon(options);
 }
 
-function buildTileFrame({ fill = "#141414", outerStroke = "#2f2f2f", innerStroke = "#575757" } = {}) {
+function buildTileFrame({fill = "#141414", outerStroke = "#2f2f2f", innerStroke = "#575757"} = {}) {
     return [
         `<rect x="0" y="0" width="144" height="144" rx="25" fill="${fill}" />`,
         `<rect x="3" y="3" width="138" height="138" rx="22" fill="none" stroke="${outerStroke}" stroke-width="6" />`,
@@ -101,7 +80,7 @@ function buildTileFrame({ fill = "#141414", outerStroke = "#2f2f2f", innerStroke
 }
 
 // -------------------------------------------------------------------------
-// NEUES SPLIT-FADER DESIGN (Nahtlose Rahmen!)
+// NEUES SPLIT-FADER DESIGN (Nahtlose Rahmen & FARBE AUS PIPEWEAVER!)
 // -------------------------------------------------------------------------
 function buildSplitFaderSvg(actionType, state, settings, accentColor) {
     const available = Boolean(state.available);
@@ -110,7 +89,7 @@ function buildSplitFaderSvg(actionType, state, settings, accentColor) {
     const muted = Boolean(state.muted);
     const isTop = actionType === "increaseBy";
 
-    // 1. Hintergrund / Button-Rahmen (Nahtlos über beide Buttons verbunden!)
+    // 1. Hintergrund / Button-Rahmen
     let frameElements = [];
     frameElements.push(
         `<defs>`,
@@ -122,18 +101,14 @@ function buildSplitFaderSvg(actionType, state, settings, accentColor) {
     );
 
     if (isTop) {
-        // Obere Taste: Rahmen geht über den unteren Rand hinaus
         frameElements.push(`<rect x="0" y="0" width="144" height="164" rx="20" fill="url(#bgGrad)" />`);
         if (muted) {
-            // Dicker roter Rahmen, wenn gemuted
             frameElements.push(`<rect x="3" y="3" width="138" height="161" rx="18" fill="none" stroke="#ff2f45" stroke-width="6" />`);
             frameElements.push(`<rect x="9" y="9" width="126" height="155" rx="14" fill="none" stroke="#ff9fa8" stroke-width="2" />`);
         } else {
-            // Normaler dunkler Rahmen
             frameElements.push(`<rect x="2" y="2" width="140" height="162" rx="18" fill="none" stroke="#3d3d3d" stroke-width="2" />`);
         }
     } else {
-        // Untere Taste: Rahmen beginnt im negativen Bereich (offen nach oben)
         frameElements.push(`<rect x="0" y="-20" width="144" height="164" rx="20" fill="url(#bgGrad)" />`);
         if (muted) {
             frameElements.push(`<rect x="3" y="-20" width="138" height="161" rx="18" fill="none" stroke="#ff2f45" stroke-width="6" />`);
@@ -144,33 +119,35 @@ function buildSplitFaderSvg(actionType, state, settings, accentColor) {
     }
     const frame = frameElements.join("");
 
-    // 2. Slider Bahn (Berechnung der virtuellen Y-Koordinate über beide Displays)
+    // 2. Slider Bahn
     const trackX = 42;
     const trackW = 16;
     const topTrackY = 24;
     const bottomTrackEndY = 120;
     const virtualY = ((100 - volumePercent) / 100) * 240;
     const darkGrey = "#111111";
-    const lightGrey = muted ? "#e74c3c" : "#b3b3b3";
+
+    // HIER WIRD NUN DIE FARBE ZUGEWIESEN:
+    const activeTrackColor = muted ? "#e74c3c" : accentColor;
 
     let trackElements = [];
     if (isTop) {
-        trackElements.push(`<path d="M ${trackX} ${topTrackY + trackW/2} A ${trackW/2} ${trackW/2} 0 0 1 ${trackX + trackW} ${topTrackY + trackW/2} L ${trackX + trackW} 144 L ${trackX} 144 Z" fill="${darkGrey}" />`);
+        trackElements.push(`<path d="M ${trackX} ${topTrackY + trackW / 2} A ${trackW / 2} ${trackW / 2} 0 0 1 ${trackX + trackW} ${topTrackY + trackW / 2} L ${trackX + trackW} 144 L ${trackX} 144 Z" fill="${darkGrey}" />`);
         if (virtualY < 120) {
             const fillY = topTrackY + virtualY;
-            trackElements.push(`<rect x="${trackX}" y="${fillY}" width="${trackW}" height="${144 - fillY}" fill="${lightGrey}" />`);
+            trackElements.push(`<rect x="${trackX}" y="${fillY}" width="${trackW}" height="${144 - fillY}" fill="${activeTrackColor}" />`);
         }
     } else {
-        trackElements.push(`<path d="M ${trackX} 0 L ${trackX + trackW} 0 L ${trackX + trackW} ${bottomTrackEndY - trackW/2} A ${trackW/2} ${trackW/2} 0 0 1 ${trackX} ${bottomTrackEndY - trackW/2} Z" fill="${darkGrey}" />`);
+        trackElements.push(`<path d="M ${trackX} 0 L ${trackX + trackW} 0 L ${trackX + trackW} ${bottomTrackEndY - trackW / 2} A ${trackW / 2} ${trackW / 2} 0 0 1 ${trackX} ${bottomTrackEndY - trackW / 2} Z" fill="${darkGrey}" />`);
         if (virtualY <= 120) {
-            trackElements.push(`<path d="M ${trackX} 0 L ${trackX + trackW} 0 L ${trackX + trackW} ${bottomTrackEndY - trackW/2} A ${trackW/2} ${trackW/2} 0 0 1 ${trackX} ${bottomTrackEndY - trackW/2} Z" fill="${lightGrey}" />`);
+            trackElements.push(`<path d="M ${trackX} 0 L ${trackX + trackW} 0 L ${trackX + trackW} ${bottomTrackEndY - trackW / 2} A ${trackW / 2} ${trackW / 2} 0 0 1 ${trackX} ${bottomTrackEndY - trackW / 2} Z" fill="${activeTrackColor}" />`);
         } else {
             const fillY = virtualY - 120;
-            trackElements.push(`<path d="M ${trackX} ${fillY} L ${trackX + trackW} ${fillY} L ${trackX + trackW} ${bottomTrackEndY - trackW/2} A ${trackW/2} ${trackW/2} 0 0 1 ${trackX} ${bottomTrackEndY - trackW/2} Z" fill="${lightGrey}" />`);
+            trackElements.push(`<path d="M ${trackX} ${fillY} L ${trackX + trackW} ${fillY} L ${trackX + trackW} ${bottomTrackEndY - trackW / 2} A ${trackW / 2} ${trackW / 2} 0 0 1 ${trackX} ${bottomTrackEndY - trackW / 2} Z" fill="${activeTrackColor}" />`);
         }
     }
 
-    // 3. Slider Knob (Reglerkappe)
+    // 3. Slider Knob
     let knobElement = "";
     if (available) {
         const knobW = 44;
@@ -188,18 +165,18 @@ function buildSplitFaderSvg(actionType, state, settings, accentColor) {
             knobElement = [
                 filterDef,
                 `<rect x="${knobX}" y="${knobTop}" width="${knobW}" height="${knobH}" rx="4" fill="#e0e0e0" filter="url(#shadow)" />`,
-                `<rect x="${knobX + 6}" y="${knobTop + (knobH/2) - 1.5}" width="${knobW - 12}" height="3" rx="1.5" fill="#222" />`
+                `<rect x="${knobX + 6}" y="${knobTop + (knobH / 2) - 1.5}" width="${knobW - 12}" height="3" rx="1.5" fill="#222" />`
             ].join("");
         }
     }
 
-    // 4. LED Volume Meter
+    // 4. LED Meter
     const meterElements = [];
     if (available) {
         const activeSegments = Math.round((currentPeakLevel / 100) * 11);
         const colors = [
-            "#39d267", "#39d267", "#39d267", "#39d267", "#39d267", // Bottom 5
-            "#39d267", "#39d267", "#a4d936", "#f1d42f", "#f59e28", "#eb4926" // Top 6
+            "#39d267", "#39d267", "#39d267", "#39d267", "#39d267",
+            "#39d267", "#39d267", "#a4d936", "#f1d42f", "#f59e28", "#eb4926"
         ];
         const meterX = 92;
         const meterW = 18;
@@ -222,7 +199,7 @@ function buildSplitFaderSvg(actionType, state, settings, accentColor) {
         }
     }
 
-    // 5. Kleines Icon (Zentriert am unteren Rand)
+    // 5. Kleines Icon unten
     let iconElement = "";
     if (!isTop) {
         const cx = 72;
@@ -247,9 +224,6 @@ function buildSplitFaderSvg(actionType, state, settings, accentColor) {
     ].join("");
 }
 
-// -------------------------------------------------------------------------
-// ALTE BUTTON DESIGNS (Status / ToggleMute)
-// -------------------------------------------------------------------------
 function buildDbStatusSvg(state, settings) {
     const available = Boolean(state.available);
     const iconColor = available ? "#ffffff" : "#737373";
@@ -257,8 +231,12 @@ function buildDbStatusSvg(state, settings) {
 
     return [
         `<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">`,
-        buildTileFrame({ fill: "#131313", outerStroke: available ? "#2f2f2f" : "#1e1e1e", innerStroke: available ? "#545454" : "#2a2a2a" }),
-        buildNodeIcon(settings, { x: 40, y: 30, width: 64, stroke: iconColor, strokeWidth: 6 }),
+        buildTileFrame({
+            fill: "#131313",
+            outerStroke: available ? "#2f2f2f" : "#1e1e1e",
+            innerStroke: available ? "#545454" : "#2a2a2a"
+        }),
+        buildNodeIcon(settings, {x: 40, y: 30, width: 64, stroke: iconColor, strokeWidth: 6}),
         `<text x="72" y="30" text-anchor="middle" font-size="11" font-weight="600" fill="#8f8f8f" font-family="Inter, Arial, sans-serif">LEVEL</text>`,
         `<text x="72" y="122" text-anchor="middle" font-size="30" font-weight="700" fill="${iconColor}" font-family="Inter, Arial, sans-serif">${valueText}</text>`,
         `</svg>`
@@ -267,30 +245,25 @@ function buildDbStatusSvg(state, settings) {
 
 function buildToggleStatusSvg(state, settings, accentColor) {
     const muted = Boolean(state.muted);
-    const liveColor = resolveAccentColor({ ...settings, accentColor });
+    const liveColor = resolveAccentColor({...settings, accentColor});
     const signalColor = muted ? "#ff2f45" : liveColor;
     const outerStroke = muted ? "#ff2f45" : "#2f2f2f";
     const innerStroke = muted ? "#ff9fa8" : hexToRgba(liveColor, 0.65);
     const glow = muted ? hexToRgba("#ff2f45", 0.45) : hexToRgba(liveColor, 0.45);
     const percentText = `${clampInt(state.volume, 0, 100, 0)}%`;
-    const trackName = escapeSvgText(clipLabel(settings?.nodeName || "TRACK", 13));
 
     return [
         `<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">`,
-        buildTileFrame({ fill: "#121214", outerStroke, innerStroke }),
+        buildTileFrame({fill: "#121214", outerStroke, innerStroke}),
         `<rect x="29" y="23" width="86" height="72" rx="16" fill="none" stroke="${signalColor}" stroke-width="6" />`,
         `<rect x="33" y="27" width="78" height="64" rx="12" fill="none" stroke="${glow}" stroke-width="2" />`,
         `<path d="M41 66L50 50L60 72L71 44L82 72L92 56L103 66" fill="none" stroke="${signalColor}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />`,
         muted ? `<path d="M35 30L109 92" fill="none" stroke="#ff2f45" stroke-width="7" stroke-linecap="round" />` : "",
-        `<text x="72" y="112" text-anchor="middle" font-size="23" font-weight="700" fill="#ffffff" font-family="Inter, Arial, sans-serif">${percentText}</text>`,
-        `<text x="72" y="132" text-anchor="middle" font-size="12" font-weight="600" fill="${signalColor}" font-family="Inter, Arial, sans-serif">${trackName}</text>`,
+        `<text x="72" y="127" text-anchor="middle" font-size="23" font-weight="700" fill="#ffffff" font-family="Inter, Arial, sans-serif">${percentText}</text>`,
         `</svg>`
     ].join("");
 }
 
-// -------------------------------------------------------------------------
-// ENTRY POINT
-// -------------------------------------------------------------------------
 function buildButtonImage(actionType, settings, state) {
     const accentColor = resolveAccentColor(settings);
     const svg = actionType === "dbStatus"
@@ -304,5 +277,4 @@ function buildButtonImage(actionType, settings, state) {
 module.exports = {
     buildButtonImage,
     resolveAccentColor,
-    isValidHexColor
 };

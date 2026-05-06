@@ -1,4 +1,34 @@
+#!/usr/bin/env node
 "use strict";
+//
+// const fs = require("node:fs");
+// const path = require("node:path");
+//
+// // --- START: LOGGING IN DATEI UMLEITEN ---
+// const logFilePath = path.join(__dirname, "debug.log");
+// const logStream = fs.createWriteStream(logFilePath, { flags: "a" });
+//
+// function formatLogMsg(level, args) {
+//   const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(" ");
+//   return `[${new Date().toISOString()}] [${level}] ${msg}\n`;
+// }
+//
+// const origLog = console.log;
+// const origError = console.error;
+//
+// console.log = function (...args) {
+//   logStream.write(formatLogMsg("INFO", args));
+//   origLog.apply(console, args);
+// };
+// console.error = function (...args) {
+//   logStream.write(formatLogMsg("ERROR", args));
+//   origError.apply(console, args);
+// };
+//
+// console.log("=========================================");
+// console.log("PLUGIN GESTARTET");
+// console.log("=========================================");
+// --- ENDE: LOGGING ---
 
 const config = require("./config");
 const audio = require("./audio-service");
@@ -6,37 +36,32 @@ const renderer = require("./svg-renderer");
 const opendeck = require("./opendeck-client");
 const peakPoll = require("./poll-node-peak-level");
 
+// WICHTIG: Dies war im letzten Log nicht geladen!
+const pipeweaver = require("./pipeweaver-client");
 
 const contexts = new Map();
 
-// --- Hilfsfunktionen für State ---
-
-function actionTypeFromUuid(uuid) {
-  if (uuid === config.UUID_DB_STATUS) return "dbStatus";
-  if (uuid === config.UUID_INCREASE) return "increaseBy";
-  if (uuid === config.UUID_DECREASE) return "decreaseBy";
-  return "toggleMute";
+function resolveActionType(settings) {
+  if (settings.isStatusOnly) return "dbStatus";
+  if (settings.stepPercent === 0) return "toggleMute";
+  return settings.stepPercent > 0 ? "increaseBy" : "decreaseBy";
 }
 
 function mergeSettings(current, incoming) {
-  const rawColor = incoming?.accentColor ?? current?.accentColor ?? config.defaultSettings.accentColor;
-  const normalizedColor = typeof rawColor === "string" ? rawColor.trim() : config.defaultSettings.accentColor;
   return {
     ...config.defaultSettings,
     ...current,
     ...incoming,
     nodeId: incoming?.nodeId != null ? String(incoming.nodeId) : String(current?.nodeId || ""),
     nodeName: incoming?.nodeName != null ? String(incoming.nodeName) : String(current?.nodeName || ""),
-    accentColor: renderer.isValidHexColor(normalizedColor) ? normalizedColor : config.defaultSettings.accentColor,
-    stepPercent: audio.clampInt(incoming?.stepPercent ?? current?.stepPercent, 1, 30, 5)
+    stepPercent: incoming?.stepPercent !== undefined ? Math.max(-30, Math.min(30, Number(incoming.stepPercent) || 0)) : (current?.stepPercent || 0),
+    isStatusOnly: incoming?.isStatusOnly !== undefined ? Boolean(incoming.isStatusOnly) : Boolean(current?.isStatusOnly)
   };
 }
 
-function getRuntime(context, actionUuid = config.UUID_TOGGLE) {
+function getRuntime(context) {
   if (!contexts.has(context)) {
     contexts.set(context, {
-      actionUuid,
-      actionType: actionTypeFromUuid(actionUuid),
       settings: { ...config.defaultSettings },
       lastKnownState: {
         available: false,
@@ -46,78 +71,51 @@ function getRuntime(context, actionUuid = config.UUID_TOGGLE) {
       }
     });
   }
-
-  const runtime = contexts.get(context);
-  if (actionUuid && runtime.actionUuid !== actionUuid) {
-    runtime.actionUuid = actionUuid;
-    runtime.actionType = actionTypeFromUuid(actionUuid);
-  }
-  return runtime;
+  return contexts.get(context);
 }
-
-// --- Hauptlogik ---
 
 async function syncContext(runtime, context, options = { sendPi: true, sendImage: true }) {
   const devices = await audio.listAudioNodes();
   const selected = devices.find((d) => d.id === String(runtime.settings.nodeId));
+  const actionType = resolveActionType(runtime.settings);
 
   if (!selected) {
-    runtime.settings = {
-      ...runtime.settings,
-      nodeKind: "",
-      nodeName: runtime.settings.nodeName || ""
-    };
-    runtime.lastKnownState = {
-      available: false,
-      volume: audio.clampInt(runtime.settings.volume, 0, 100, 50),
-      muted: Boolean(runtime.settings.muted),
-      peakLevel: 0
-    };
+    runtime.settings.nodeKind = "";
+    runtime.lastKnownState.available = false;
   } else {
     const nodeState = await audio.getNodeState(selected.id);
     if (!nodeState) {
-      runtime.settings = {
-        ...runtime.settings,
-        nodeKind: selected.kind,
-        nodeName: selected.name
-      };
-      opendeck.setSettings(context, runtime.settings);
-      runtime.lastKnownState = {
-        available: false,
-        volume: audio.clampInt(runtime.settings.volume, 0, 100, 50),
-        muted: Boolean(runtime.settings.muted),
-        peakLevel: 0
-      };
+      runtime.settings.nodeKind = selected.kind;
+      runtime.lastKnownState.available = false;
     } else {
-      const currentPeakLevel = peakPoll.pollNodePeakLevel(selected.id, nodeState.volume, nodeState.muted);
+      runtime.settings.nodeKind = selected.kind;
+      runtime.settings.nodeName = selected.name;
+
+      // Auto-Farbe von PipeWeaver holen
+      const pwColor = pipeweaver.getColorForNodeName(selected.name);
+      if (pwColor) {
+        runtime.settings.accentColor = pwColor;
+      } else {
+        runtime.settings.accentColor = config.defaultSettings.accentColor;
+      }
+
       runtime.lastKnownState = {
         available: true,
         volume: nodeState.volume,
         muted: nodeState.muted,
-        peakLevel: currentPeakLevel
+        peakLevel: peakPoll.pollNodePeakLevel(selected.id, nodeState.volume, nodeState.muted)
       };
-
-      runtime.settings = {
-        ...runtime.settings,
-        nodeKind: selected.kind,
-        nodeName: selected.name,
-        volume: nodeState.volume,
-        muted: nodeState.muted,
-        peakLevel: currentPeakLevel
-      };
-      opendeck.setSettings(context, runtime.settings);
     }
+    opendeck.setSettings(context, runtime.settings);
   }
 
   if (options.sendImage) {
-    opendeck.setImage(context, renderer.buildButtonImage(runtime.actionType, runtime.settings, runtime.lastKnownState));
-    opendeck.setTitle(context, "");
+    opendeck.setImage(context, renderer.buildButtonImage(actionType, runtime.settings, runtime.lastKnownState));
   }
 
   if (options.sendPi) {
-    opendeck.sendToPropertyInspector(runtime.actionUuid, context, {
+    opendeck.sendToPropertyInspector("com.opendeck.pipewire.mixer", context, {
       type: "status",
-      actionType: runtime.actionType,
       devices,
       settings: runtime.settings,
       state: runtime.lastKnownState
@@ -131,94 +129,71 @@ async function syncAllContextsForNode(nodeId) {
   await Promise.all(entries.map(([context, runtime]) => syncContext(runtime, context, { sendPi: true, sendImage: true })));
 }
 
-async function applyKeyAction(runtime, context) {
+async function applyKeyAction(runtime) {
   const nodeId = runtime.settings.nodeId;
   if (!nodeId) return;
 
-  if (runtime.actionType === "dbStatus") return;
+  const actionType = resolveActionType(runtime.settings);
 
-  if (runtime.actionType === "toggleMute") {
+  if (actionType === "dbStatus") return;
+
+  if (actionType === "toggleMute") {
     await audio.toggleNodeMute(nodeId);
     return;
   }
 
   const current = await audio.getNodeState(nodeId);
   if (!current) return;
-
-  const delta = runtime.actionType === "increaseBy" ? runtime.settings.stepPercent : -runtime.settings.stepPercent;
-  const next = audio.clampInt(current.volume + delta, 0, 100, current.volume);
+  const next = audio.clampInt(current.volume + runtime.settings.stepPercent, 0, 100, current.volume);
   await audio.setNodeVolume(nodeId, next);
 }
 
 function refreshPeakVisuals() {
   for (const [context, runtime] of contexts.entries()) {
-    const nodeId = runtime.settings.nodeId;
-    if (!nodeId || !runtime.lastKnownState.available) continue;
+    if (!runtime.settings.nodeId || !runtime.lastKnownState.available) continue;
 
-    const nextPeak = peakPoll.pollNodePeakLevel(nodeId, runtime.lastKnownState.volume, runtime.lastKnownState.muted);
-    runtime.lastKnownState = { ...runtime.lastKnownState, peakLevel: nextPeak };
+    runtime.lastKnownState.peakLevel = peakPoll.pollNodePeakLevel(runtime.settings.nodeId, runtime.lastKnownState.volume, runtime.lastKnownState.muted);
 
-    opendeck.setImage(context, renderer.buildButtonImage(runtime.actionType, runtime.settings, runtime.lastKnownState));
-    opendeck.sendToPropertyInspector(runtime.actionUuid, context, {
+    opendeck.setImage(context, renderer.buildButtonImage(resolveActionType(runtime.settings), runtime.settings, runtime.lastKnownState));
+    opendeck.sendToPropertyInspector("com.opendeck.pipewire.mixer", context, {
       type: "peak",
       settings: { accentColor: renderer.resolveAccentColor(runtime.settings) },
-      state: {
-        volume: runtime.lastKnownState.volume,
-        peakLevel: runtime.lastKnownState.peakLevel,
-        muted: runtime.lastKnownState.muted,
-        available: runtime.lastKnownState.available
-      }
+      state: runtime.lastKnownState
     });
   }
 }
 
-// --- Event Handler ---
-
 async function onMessage(message) {
   const context = message.context;
-  const runtime = context ? getRuntime(context, message.action) : null;
+  const runtime = context ? getRuntime(context) : null;
 
   switch (message.event) {
     case "willAppear":
-      runtime.settings = mergeSettings(runtime.settings, message.payload?.settings || {});
-      await syncContext(runtime, context, { sendPi: true, sendImage: true });
-      break;
-
     case "didReceiveSettings":
       runtime.settings = mergeSettings(runtime.settings, message.payload?.settings || {});
       await syncContext(runtime, context, { sendPi: true, sendImage: true });
       break;
 
     case "keyUp":
-      const nodeId = runtime.settings.nodeId;
-      await applyKeyAction(runtime, context);
-      if (nodeId) {
-        await syncAllContextsForNode(nodeId);
-      } else {
-        await syncContext(runtime, context, { sendPi: true, sendImage: true });
-      }
+      await applyKeyAction(runtime);
+      if (runtime.settings.nodeId) await syncAllContextsForNode(runtime.settings.nodeId);
       break;
 
     case "sendToPlugin":
       const cmd = message.payload?.command;
-
       if (cmd === "requestNodes") {
         await syncContext(runtime, context, { sendPi: true, sendImage: false });
       } else if (cmd === "setNode") {
-        runtime.settings = { ...runtime.settings, nodeId: String(message.payload?.nodeId || ""), nodeName: message.payload?.nodeId ? runtime.settings.nodeName : "" };
+        runtime.settings = mergeSettings(runtime.settings, { nodeId: message.payload?.nodeId });
         opendeck.setSettings(context, runtime.settings);
         await syncContext(runtime, context, { sendPi: true, sendImage: true });
-      } else if (cmd === "setStep") {
-        runtime.settings = { ...runtime.settings, stepPercent: audio.clampInt(message.payload?.stepPercent, 1, 30, runtime.settings.stepPercent) };
+      } else if (cmd === "setFlags") {
+        runtime.settings = mergeSettings(runtime.settings, {
+          isStatusOnly: message.payload?.isStatusOnly,
+          stepPercent: message.payload?.stepPercent
+        });
         opendeck.setSettings(context, runtime.settings);
         await syncContext(runtime, context, { sendPi: true, sendImage: true });
-      } else if (cmd === "setAccent") {
-        const accentColor = String(message.payload?.accentColor || "").trim();
-        if (renderer.isValidHexColor(accentColor)) {
-          runtime.settings = { ...runtime.settings, accentColor };
-          opendeck.setSettings(context, runtime.settings);
-          await syncContext(runtime, context, { sendPi: true, sendImage: true });
-        }
       }
       break;
 
@@ -228,53 +203,31 @@ async function onMessage(message) {
   }
 }
 
-// --- Intervalle ---
-
 setInterval(async () => {
   if (!contexts.size) return;
-  const entries = Array.from(contexts.entries());
-  await Promise.all(entries.map(([context, runtime]) => syncContext(runtime, context, { sendPi: true, sendImage: true })));
+  await Promise.all(Array.from(contexts.entries()).map(([context, runtime]) => syncContext(runtime, context, { sendPi: true, sendImage: true })));
 }, config.POLL_INTERVAL_MS);
 
 setInterval(() => {
-  if (!contexts.size) return;
-  refreshPeakVisuals();
+  if (contexts.size) refreshPeakVisuals();
 }, config.PEAK_POLL_INTERVAL_MS);
-
-// --- Startup Logik ---
 
 function tryStartFromCliArgs() {
   const args = {};
-  process.env.OSENDECK_DEBUG = process.env.OSENDECK_DEBUG || "1";
-
-  console.log("[VolumeMixer] CLI args:", process.argv.slice(2));
-  for (let i = 2; i < process.argv.length; i += 2) {
-    const key = String(process.argv[i] || "").replace(/^-/, "");
-    args[key] = process.argv[i + 1];
-  }
+  for (let i = 2; i < process.argv.length; i += 2) args[String(process.argv[i] || "").replace(/^-/, "")] = process.argv[i + 1];
 
   if (args.port && args.pluginUUID && args.registerEvent) {
     opendeck.connect(args.port, args.pluginUUID, args.registerEvent, onMessage);
-    return;
+  } else {
+    require("node:child_process").spawn("node", ["plugin.js"], { stdio: "inherit" });
   }
-
-  console.log("[VolumeMixer] Warning: Missing required args (port, pluginUUID, registerEvent)");
-  console.log("[VolumeMixer] Fallback: Starting via node script...");
-  const { spawn } = require("node:child_process");
-
-  // Hinweis: Wenn dieses Skript über node aufgerufen wird, versucht es sich selbst (oder ein anderes Skript)
-  // neu zu starten, wenn die CLI Parameter fehlen.
-  const nodeProcess = spawn("node", ["plugin.js"], { stdio: "inherit" });
-  nodeProcess.on("error", (err) => console.error("[VolumeMixer] Error spawning node:", err));
-  nodeProcess.on("close", (code) => console.log(`[VolumeMixer] Node process closed with code: ${code}`));
 }
 
-// Wrapper-Funktion für Kompatibilität
 global.connectElgatoStreamDeckSocket = function(inPort, inPluginUUID, inRegisterEvent) {
   opendeck.connect(inPort, inPluginUUID, inRegisterEvent, onMessage);
 };
 
-process.on("unhandledRejection", (err) => console.error("[VolumeMixer] Unhandled rejection:", err));
-process.on("uncaughtException", (err) => console.error("[VolumeMixer] Uncaught exception:", err));
+process.on("unhandledRejection", (err) => console.error("Unhandled Rejection:", err));
+process.on("uncaughtException", (err) => console.error("Uncaught Exception:", err));
 
 tryStartFromCliArgs();

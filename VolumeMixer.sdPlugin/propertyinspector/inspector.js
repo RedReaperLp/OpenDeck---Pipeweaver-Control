@@ -2,262 +2,186 @@
 
 let websocket = null;
 let uuid = null;
-let actionInfo = null;
+let actionUUID = "com.opendeck.pipewire.mixer";
 
 const state = {
-  actionType: "toggleMute",
-  devices: [],
-  nodeId: "",
-  stepPercent: 5,
-  volume: 0,
-  peakLevel: 0,
-  muted: false,
-  available: false,
-  accentColor: "#00d2ff"
-};
-
-const ACTION_LABELS = {
-  dbStatus: "DbStatus",
-  increaseBy: "IncreaseBy",
-  decreaseBy: "DecreaseBy",
-  toggleMute: "ToggleMute"
+    devices: [],
+    nodeId: "",
+    stepPercent: 0,
+    isStatusOnly: false,
+    volume: 0,
+    peakLevel: 0,
+    muted: false,
+    available: false,
+    accentColor: "#00d2ff"
 };
 
 const els = {
-  body: document.body,
-  actionLabel: document.getElementById("actionLabel"),
-  nodeSelect: document.getElementById("nodeSelect"),
-  stepRow: document.getElementById("stepRow"),
-  stepSlider: document.getElementById("stepSlider"),
-  stepValue: document.getElementById("stepValue"),
-  accentPicker: document.getElementById("accentPicker"),
-  accentValue: document.getElementById("accentValue"),
-  volumeValue: document.getElementById("volumeValue"),
-  muteValue: document.getElementById("muteValue"),
-  meterFill: document.getElementById("meterFill"),
-  status: document.getElementById("status")
+    body: document.body,
+    actionLabel: document.getElementById("actionLabel"),
+    nodeSelect: document.getElementById("nodeSelect"),
+    statusCheckbox: document.getElementById("statusCheckbox"),
+    stepRow: document.getElementById("stepRow"),
+    stepSlider: document.getElementById("stepSlider"),
+    stepValue: document.getElementById("stepValue"),
+    volumeValue: document.getElementById("volumeValue"),
+    muteValue: document.getElementById("muteValue"),
+    meterFill: document.getElementById("meterFill"),
+    status: document.getElementById("status")
 };
 
 function isValidHexColor(value) {
-  return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value.trim());
-}
-
-function clampStep(value) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return 5;
-  return Math.max(1, Math.min(30, Math.round(n)));
+    return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value.trim());
 }
 
 function clampPercent(value) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return 0;
-  return Math.max(0, Math.min(100, Math.round(n)));
+    const n = Number(value);
+    return !Number.isFinite(n) ? 0 : Math.max(0, Math.min(100, Math.round(n)));
+}
+
+function clampStep(value) {
+    const n = Number(value);
+    return !Number.isFinite(n) ? 0 : Math.max(-30, Math.min(30, Math.round(n)));
 }
 
 function normalizeHexColor(value, fallback = "#00d2ff") {
-  if (!isValidHexColor(value)) return fallback;
-  return value.trim().toLowerCase();
+    return !isValidHexColor(value) ? fallback : value.trim().toLowerCase();
 }
 
-function isStepAction() {
-  return state.actionType === "increaseBy" || state.actionType === "decreaseBy";
+function resolveActionString() {
+    if (state.isStatusOnly) return "Nur Status-Anzeige";
+    if (state.stepPercent === 0) return "Mute Toggle";
+    if (state.stepPercent > 0) return `Lauter (Obere Taste)`;
+    return `Leiser (Untere Taste)`;
 }
 
 function updateStatus(text) {
-  els.status.textContent = text;
+    els.status.textContent = text;
 }
 
-function updateSliderProgress() {
-  const step = clampStep(state.stepPercent);
-  const min = Number(els.stepSlider.min) || 1;
-  const max = Number(els.stepSlider.max) || 30;
-  const progress = ((step - min) / (max - min)) * 100;
-  els.stepSlider.style.setProperty("--step-progress", `${progress}%`);
+function updateSliderUi() {
+    const step = clampStep(state.stepPercent);
+    const min = -30, max = 30;
+    const progress = ((step - min) / (max - min)) * 100;
+
+    els.stepSlider.value = String(step);
+    els.stepSlider.style.setProperty("--step-progress", `${progress}%`);
+
+    if (step === 0) els.stepValue.textContent = "Toggle";
+    else if (step > 0) els.stepValue.textContent = `+${step}%`;
+    else els.stepValue.textContent = `${step}%`;
+
+    els.actionLabel.textContent = `Aktion: ${resolveActionString()}`;
+
+    els.stepRow.classList.toggle("hidden", state.isStatusOnly);
+    els.statusCheckbox.checked = state.isStatusOnly;
 }
 
 function updateTheme() {
-  const muted = Boolean(state.muted);
-  els.body.classList.toggle("muted", muted);
-  els.body.style.setProperty("--accent", state.accentColor);
-}
-
-function updateAccentUi() {
-  const color = normalizeHexColor(state.accentColor);
-  state.accentColor = color;
-  els.accentPicker.value = color;
-  els.accentValue.textContent = color.toUpperCase();
-  els.accentValue.style.color = color;
-}
-
-function updateStepUi() {
-  const step = clampStep(state.stepPercent);
-  state.stepPercent = step;
-  els.stepSlider.value = String(step);
-  els.stepValue.textContent = `${step}%`;
-  els.stepRow.classList.toggle("hidden", !isStepAction());
-  updateSliderProgress();
-}
-
-function updateActionUi() {
-  els.actionLabel.textContent = `Action: ${ACTION_LABELS[state.actionType] || state.actionType}`;
-  updateStepUi();
-  updateAccentUi();
+    const muted = Boolean(state.muted);
+    els.body.classList.toggle("muted", muted);
+    els.body.style.setProperty("--accent", state.accentColor);
 }
 
 function updateMeter() {
-  const volume = clampPercent(state.volume);
-  const peak = clampPercent(state.peakLevel);
-  const muted = Boolean(state.muted);
-
-  els.volumeValue.textContent = `${volume}%`;
-  els.muteValue.textContent = muted ? "MUTED" : "LIVE";
-  els.muteValue.classList.toggle("muted", muted);
-  els.meterFill.style.width = muted ? "100%" : `${peak}%`;
+    els.volumeValue.textContent = `${clampPercent(state.volume)}%`;
+    els.muteValue.textContent = state.muted ? "MUTED" : "LIVE";
+    els.muteValue.classList.toggle("muted", state.muted);
+    els.meterFill.style.width = state.muted ? "100%" : `${clampPercent(state.peakLevel)}%`;
 }
 
 function renderNodes() {
-  const list = state.devices;
-  els.nodeSelect.innerHTML = "";
-
-  if (!list.length) {
-    const opt = document.createElement("option");
-    opt.value = "";
-    opt.textContent = "Keine steuerbaren Nodes gefunden";
-    els.nodeSelect.appendChild(opt);
-    return;
-  }
-
-  for (const node of list) {
-    const opt = document.createElement("option");
-    opt.value = String(node.id);
-    const prefix = String(node.kind || "node").toUpperCase();
-    const def = node.isDefault ? " (Default)" : "";
-    opt.textContent = `[${prefix}] ${node.name}${def}`;
-    els.nodeSelect.appendChild(opt);
-  }
-
-  const exists = list.some((node) => String(node.id) === String(state.nodeId));
-  els.nodeSelect.value = exists ? String(state.nodeId) : String(list[0].id);
+    els.nodeSelect.innerHTML = state.devices.length ? "" : `<option value="">Keine Nodes gefunden</option>`;
+    for (const node of state.devices) {
+        const opt = document.createElement("option");
+        opt.value = String(node.id);
+        opt.textContent = `[${String(node.kind).toUpperCase()}] ${node.name}${node.isDefault ? " (Default)" : ""}`;
+        els.nodeSelect.appendChild(opt);
+    }
+    if (state.devices.some(n => String(n.id) === String(state.nodeId))) els.nodeSelect.value = String(state.nodeId);
 }
 
 function sendToPlugin(payload) {
-  if (!websocket || websocket.readyState !== WebSocket.OPEN || !uuid) return;
-  websocket.send(
-    JSON.stringify({
-      action: actionInfo?.action,
-      event: "sendToPlugin",
-      context: uuid,
-      payload
-    })
-  );
+    if (websocket?.readyState === WebSocket.OPEN && uuid) {
+        websocket.send(JSON.stringify({action: actionUUID, event: "sendToPlugin", context: uuid, payload}));
+    }
 }
 
 function applyBackendStatus(payload) {
-  if (typeof payload.actionType === "string") state.actionType = payload.actionType;
-  if (Array.isArray(payload.devices)) state.devices = payload.devices;
-
-  if (payload.settings) {
-    state.nodeId = String(payload.settings.nodeId || "");
-    state.stepPercent = clampStep(payload.settings.stepPercent);
-    state.accentColor = normalizeHexColor(payload.settings.accentColor);
-  }
-
-  if (payload.state) {
-    state.available = Boolean(payload.state.available);
-    state.volume = clampPercent(payload.state.volume);
-    state.peakLevel = clampPercent(payload.state.peakLevel);
-    state.muted = Boolean(payload.state.muted);
-  }
-
-  updateTheme();
-  updateActionUi();
-  renderNodes();
-  updateMeter();
-
-  if (!state.nodeId) {
-    updateStatus("Bitte Audiospur auswaehlen.");
-  } else if (!state.available) {
-    updateStatus("Node nicht verfuegbar (evtl. getrennt/beendet).");
-  } else {
-    updateStatus("Bereit.");
-  }
-}
-
-function applyPeakUpdate(payload) {
-  if (payload.settings && isValidHexColor(payload.settings.accentColor)) {
-    state.accentColor = normalizeHexColor(payload.settings.accentColor);
-  }
-
-  if (payload.state) {
-    state.available = Boolean(payload.state.available);
-    state.volume = clampPercent(payload.state.volume);
-    state.peakLevel = clampPercent(payload.state.peakLevel);
-    state.muted = Boolean(payload.state.muted);
-  }
-
-  updateTheme();
-  updateAccentUi();
-  updateMeter();
+    if (Array.isArray(payload.devices)) state.devices = payload.devices;
+    if (payload.settings) {
+        state.nodeId = String(payload.settings.nodeId || "");
+        state.stepPercent = clampStep(payload.settings.stepPercent);
+        state.isStatusOnly = Boolean(payload.settings.isStatusOnly);
+        state.accentColor = normalizeHexColor(payload.settings.accentColor);
+    }
+    if (payload.state) {
+        state.available = Boolean(payload.state.available);
+        state.volume = clampPercent(payload.state.volume);
+        state.peakLevel = clampPercent(payload.state.peakLevel);
+        state.muted = Boolean(payload.state.muted);
+    }
+    updateTheme();
+    updateSliderUi();
+    renderNodes();
+    updateMeter();
+    updateStatus(state.nodeId ? (state.available ? "Bereit." : "Node nicht verfuegbar.") : "Bitte Audiospur auswaehlen.");
 }
 
 function wireEvents() {
-  els.nodeSelect.addEventListener("change", () => {
-    state.nodeId = String(els.nodeSelect.value || "");
-    sendToPlugin({ command: "setNode", nodeId: state.nodeId });
-  });
-
-  els.stepSlider.addEventListener("input", () => {
-    const stepPercent = clampStep(els.stepSlider.value);
-    state.stepPercent = stepPercent;
-    updateStepUi();
-    sendToPlugin({ command: "setStep", stepPercent });
-  });
-
-  els.accentPicker.addEventListener("input", () => {
-    const accentColor = normalizeHexColor(els.accentPicker.value, state.accentColor);
-    state.accentColor = accentColor;
-    updateTheme();
-    updateAccentUi();
-    sendToPlugin({ command: "setAccent", accentColor });
-  });
-}
-
-function handleMessage(rawData) {
-  let msg;
-  try {
-    msg = JSON.parse(rawData);
-  } catch {
-    return;
-  }
-
-  if (msg.event !== "sendToPropertyInspector") return;
-  if (!msg.payload || typeof msg.payload.type !== "string") return;
-  if (msg.payload.type === "status") {
-    applyBackendStatus(msg.payload);
-    return;
-  }
-  if (msg.payload.type === "peak") {
-    applyPeakUpdate(msg.payload);
-  }
+    els.nodeSelect.addEventListener("change", () => sendToPlugin({
+        command: "setNode",
+        nodeId: String(els.nodeSelect.value || "")
+    }));
+    els.statusCheckbox.addEventListener("change", () => {
+        state.isStatusOnly = els.statusCheckbox.checked;
+        updateSliderUi();
+        sendToPlugin({command: "setFlags", isStatusOnly: state.isStatusOnly, stepPercent: state.stepPercent});
+    });
+    els.stepSlider.addEventListener("input", () => {
+        state.stepPercent = clampStep(els.stepSlider.value);
+        updateSliderUi();
+        sendToPlugin({command: "setFlags", isStatusOnly: state.isStatusOnly, stepPercent: state.stepPercent});
+    });
 }
 
 function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
-  uuid = inUUID;
-  actionInfo = JSON.parse(inActionInfo || "{}");
+    uuid = inUUID;
 
-  websocket = new WebSocket(`ws://127.0.0.1:${inPort}`);
-  websocket.onopen = () => {
-    websocket.send(JSON.stringify({ event: inRegisterEvent, uuid }));
-    updateStatus("Verbunden. Lade Nodes ...");
-    sendToPlugin({ command: "requestNodes" });
-  };
-  websocket.onmessage = (evt) => handleMessage(String(evt.data));
-  websocket.onclose = () => updateStatus("Verbindung geschlossen.");
+    // Initiales Laden der gespeicherten Werte
+    if (inActionInfo) {
+        try {
+            const actionInfo = JSON.parse(inActionInfo);
+            if (actionInfo.action) actionUUID = actionInfo.action;
+            if (actionInfo.payload?.settings) {
+                state.nodeId = String(actionInfo.payload.settings.nodeId || "");
+                state.stepPercent = clampStep(actionInfo.payload.settings.stepPercent);
+                state.isStatusOnly = Boolean(actionInfo.payload.settings.isStatusOnly);
+                state.accentColor = normalizeHexColor(actionInfo.payload.settings.accentColor);
+                updateTheme();
+                updateSliderUi();
+            }
+        } catch (e) {
+        }
+    }
+
+    websocket = new WebSocket(`ws://127.0.0.1:${inPort}`);
+    websocket.onopen = () => {
+        websocket.send(JSON.stringify({event: inRegisterEvent, uuid}));
+        sendToPlugin({command: "requestNodes"});
+    };
+    websocket.onmessage = (evt) => {
+        const msg = JSON.parse(evt.data);
+        if (msg.event === "sendToPropertyInspector" && msg.payload?.type === "status") applyBackendStatus(msg.payload);
+        else if (msg.payload?.type === "peak") {
+            applyBackendStatus({state: msg.payload.state});
+            updateMeter();
+        }
+    };
 }
 
 wireEvents();
 updateTheme();
-updateActionUi();
+updateSliderUi();
 updateMeter();
-
 window.connectElgatoStreamDeckSocket = connectElgatoStreamDeckSocket;

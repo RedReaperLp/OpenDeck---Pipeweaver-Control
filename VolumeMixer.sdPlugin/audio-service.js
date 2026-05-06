@@ -19,7 +19,6 @@ async function runWpctl(args) {
     console.log(`[${logId}] Executing wpctl: ${args.join(" ")}`);
     try {
         const { stdout, stderr } = await execFileAsync("wpctl", args, { timeout: WPCTL_TIMEOUT_MS });
-        console.log(`[${logId}] SUCCESS: ${stdout}`);
         return { ok: true, stdout: (stdout || "").trim(), stderr: (stderr || "").trim() };
     } catch (error) {
         console.error(`[${logId}] FAILED: ${error.stderr || error.message}`);
