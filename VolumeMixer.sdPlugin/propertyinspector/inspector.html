@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PipeWire Mixer Inspector</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0f1012;
+        --card: #131416;
+        --text: #ffffff;
+        --line: #2e3035;
+        --line-soft: #4c4f57;
+        --accent: #00d2ff;
+        --slider-fill: #ffffff;
+        --slider-base: #1f2228;
+        --thumb-a: #ffffff;
+        --thumb-b: #d7d7d7;
+        --meter-fill: linear-gradient(90deg, #46d66d, #ffe14d, #ff4d4d);
+        --meter-bg: #101217;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 14px;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      }
+
+      body.muted {
+        --slider-fill: #ff2f45;
+        --slider-base: #2b1419;
+        --thumb-a: #ffb4bc;
+        --thumb-b: #ff2f45;
+        --meter-fill: #2d2d2d;
+        --meter-bg: #171717;
+      }
+
+      .card {
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 12px;
+        padding: 14px;
+        box-shadow: inset 0 0 0 1px var(--line-soft), 0 12px 24px rgba(0, 0, 0, 0.36);
+      }
+
+      h1 {
+        margin: 0 0 2px;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      .subtitle {
+        margin: 0 0 14px;
+        font-size: 12px;
+        color: #c5c7cd;
+      }
+
+      .row {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 13px;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      label,
+      .sectionLabel {
+        font-size: 12px;
+        color: #d7d8dc;
+      }
+
+      select,
+      input[type="color"],
+      input[type="range"] {
+        width: 100%;
+      }
+
+      select {
+        background: #0d0e12;
+        color: #ffffff;
+        border: 1px solid var(--line-soft);
+        border-radius: 8px;
+        padding: 8px;
+      }
+
+      input[type="color"] {
+        height: 34px;
+        background: #0d0e12;
+        border: 1px solid var(--line-soft);
+        border-radius: 8px;
+        padding: 4px;
+      }
+
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+        height: 24px;
+        --step-progress: 0%;
+      }
+
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 6px;
+        border-radius: 999px;
+        background: linear-gradient(
+          90deg,
+          var(--slider-fill) 0%,
+          var(--slider-fill) var(--step-progress),
+          var(--slider-base) var(--step-progress),
+          var(--slider-base) 100%
+        );
+        border: 1px solid #3b3e47;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        margin-top: -7px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid #101216;
+        background: radial-gradient(circle at 30% 30%, var(--thumb-a) 0%, var(--thumb-b) 70%);
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+        cursor: pointer;
+      }
+
+      input[type="range"]::-moz-range-track {
+        height: 5px;
+        border-radius: 999px;
+        background: var(--slider-base);
+        border: 1px solid #3b3e47;
+      }
+
+      input[type="range"]::-moz-range-progress {
+        height: 5px;
+        border-radius: 999px;
+        background: var(--slider-fill);
+      }
+
+      input[type="range"]::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid #101216;
+        background: radial-gradient(circle at 30% 30%, var(--thumb-a) 0%, var(--thumb-b) 70%);
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+        cursor: pointer;
+      }
+
+      .line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .value {
+        width: 68px;
+        text-align: right;
+        font-size: 12px;
+        color: #ffffff;
+      }
+
+      .value.hex {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+      }
+
+      #muteValue {
+        font-weight: 700;
+        color: #63f598;
+      }
+
+      #muteValue.muted {
+        color: #ff3333;
+      }
+
+      .meter {
+        width: 100%;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--meter-bg);
+        border: 1px solid var(--line-soft);
+        overflow: hidden;
+      }
+
+      .meter > span {
+        display: block;
+        height: 100%;
+        width: 0%;
+        background: var(--meter-fill);
+        transition: width 180ms ease-out;
+      }
+
+      .status {
+        font-size: 12px;
+        color: #c5c7cd;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>PipeWire Track Action</h1>
+      <p id="actionLabel" class="subtitle">Action: —</p>
+
+      <div class="row">
+        <label for="nodeSelect">Audiospur / Node</label>
+        <select id="nodeSelect">
+          <option value="">Keine Nodes gefunden</option>
+        </select>
+      </div>
+
+      <div id="stepRow" class="row">
+        <label for="stepSlider">Schrittweite (IncreaseBy/DecreaseBy)</label>
+        <div class="line">
+          <input id="stepSlider" type="range" min="1" max="30" step="1" value="5" />
+          <div id="stepValue" class="value">5%</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <label for="accentPicker">Spurfarbe (pro Taste)</label>
+        <div class="line">
+          <input id="accentPicker" type="color" value="#00d2ff" />
+          <div id="accentValue" class="value hex">#00D2FF</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>Aktueller Pegel</label>
+        <div class="line">
+          <div id="volumeValue" class="value">0%</div>
+          <div id="muteValue" class="value">LIVE</div>
+        </div>
+        <div class="meter"><span id="meterFill"></span></div>
+      </div>
+
+      <div id="status" class="status">Warte auf Verbindung ...</div>
+    </div>
+
+    <script src="inspector.js"></script>
+  </body>
+</html>

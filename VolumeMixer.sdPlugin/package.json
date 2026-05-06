@@ -1,0 +1,20 @@
+{
+  "name": "opendeck-pipewire-volume-mixer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Wavelink-aehnliches PipeWire Mixer Plugin fuer OpenDeck",
+  "main": "plugin.js",
+  "type": "commonjs",
+  "scripts": {
+    "check": "node --check plugin.js && node --check propertyinspector/inspector.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
+  },
+  "optionalDependencies": {
+    "canvas": "^2.11.2"
+  }
+}
