@@ -76,34 +76,41 @@ function getRuntime(context) {
 
 async function syncContext(runtime, context, options = { sendPi: true, sendImage: true }) {
   const devices = await audio.listAudioNodes();
-  const selected = devices.find((d) => d.id === String(runtime.settings.nodeId));
+
+  let selected = null;
+
+  if (runtime.settings.nodeName) {
+    selected = devices.find((d) => d.name === runtime.settings.nodeName);
+  }
+
+  if (!selected && runtime.settings.nodeId) {
+    selected = devices.find((d) => d.id === String(runtime.settings.nodeId));
+  }
+
   const actionType = resolveActionType(runtime.settings);
 
   if (!selected) {
     runtime.settings.nodeKind = "";
     runtime.lastKnownState.available = false;
   } else {
+    runtime.settings.nodeId = selected.id;
+    runtime.settings.nodeName = selected.name;
+
     const nodeState = await audio.getNodeState(selected.id);
     if (!nodeState) {
       runtime.settings.nodeKind = selected.kind;
       runtime.lastKnownState.available = false;
     } else {
       runtime.settings.nodeKind = selected.kind;
-      runtime.settings.nodeName = selected.name;
 
-      // Auto-Farbe von PipeWeaver holen
       const pwColor = pipeweaver.getColorForNodeName(selected.name);
-      if (pwColor) {
-        runtime.settings.accentColor = pwColor;
-      } else {
-        runtime.settings.accentColor = config.defaultSettings.accentColor;
-      }
+      runtime.settings.accentColor = pwColor || config.defaultSettings.accentColor;
 
       runtime.lastKnownState = {
         available: true,
         volume: nodeState.volume,
         muted: nodeState.muted,
-        peakLevel: peakPoll.pollNodePeakLevel(selected.id, nodeState.volume, nodeState.muted)
+        peakLevel: runtime.lastKnownState.peakLevel || 0
       };
     }
     opendeck.setSettings(context, runtime.settings);
@@ -149,10 +156,21 @@ async function applyKeyAction(runtime) {
 }
 
 function refreshPeakVisuals() {
+  const polledPeaks = new Map();
+
   for (const [context, runtime] of contexts.entries()) {
     if (!runtime.settings.nodeId || !runtime.lastKnownState.available) continue;
 
-    runtime.lastKnownState.peakLevel = peakPoll.pollNodePeakLevel(runtime.settings.nodeId, runtime.lastKnownState.volume, runtime.lastKnownState.muted);
+    const id = String(runtime.settings.nodeId);
+
+    if (!polledPeaks.has(id)) {
+      // HIER NEU: runtime.settings.nodeKind als 2. Argument übergeben!
+      const peak = peakPoll.pollNodePeakLevel(id, runtime.settings.nodeKind, runtime.lastKnownState.volume, runtime.lastKnownState.muted);
+      polledPeaks.set(id, peak);
+    }
+
+    // Peak aus dem Cache zuweisen
+    runtime.lastKnownState.peakLevel = polledPeaks.get(id);
 
     opendeck.setImage(context, renderer.buildButtonImage(resolveActionType(runtime.settings), runtime.settings, runtime.lastKnownState));
     opendeck.sendToPropertyInspector("com.opendeck.pipewire.mixer", context, {
@@ -184,7 +202,10 @@ async function onMessage(message) {
       if (cmd === "requestNodes") {
         await syncContext(runtime, context, { sendPi: true, sendImage: false });
       } else if (cmd === "setNode") {
-        runtime.settings = mergeSettings(runtime.settings, { nodeId: message.payload?.nodeId });
+        runtime.settings = mergeSettings(runtime.settings, {
+          nodeId: message.payload?.nodeId,
+          nodeName: message.payload?.nodeName // <--- NEU: Name abspeichern
+        });
         opendeck.setSettings(context, runtime.settings);
         await syncContext(runtime, context, { sendPi: true, sendImage: true });
       } else if (cmd === "setFlags") {

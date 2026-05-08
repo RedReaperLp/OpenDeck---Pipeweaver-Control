@@ -67,9 +67,7 @@ function updateSliderUi() {
     els.stepSlider.value = String(step);
     els.stepSlider.style.setProperty("--step-progress", `${progress}%`);
 
-    if (step === 0) els.stepValue.textContent = "Toggle";
-    else if (step > 0) els.stepValue.textContent = `+${step}%`;
-    else els.stepValue.textContent = `${step}%`;
+    if (step === 0) els.stepValue.textContent = "Toggle"; else if (step > 0) els.stepValue.textContent = `+${step}%`; else els.stepValue.textContent = `${step}%`;
 
     els.actionLabel.textContent = `Aktion: ${resolveActionString()}`;
 
@@ -95,6 +93,7 @@ function renderNodes() {
     for (const node of state.devices) {
         const opt = document.createElement("option");
         opt.value = String(node.id);
+        opt.dataset.name = node.name; // <--- NEU: Den Namen am Element speichern
         opt.textContent = `[${String(node.kind).toUpperCase()}] ${node.name}${node.isDefault ? " (Default)" : ""}`;
         els.nodeSelect.appendChild(opt);
     }
@@ -129,10 +128,14 @@ function applyBackendStatus(payload) {
 }
 
 function wireEvents() {
-    els.nodeSelect.addEventListener("change", () => sendToPlugin({
-        command: "setNode",
-        nodeId: String(els.nodeSelect.value || "")
-    }));
+    els.nodeSelect.addEventListener("change", () => {
+        const selectedOpt = els.nodeSelect.options[els.nodeSelect.selectedIndex];
+        sendToPlugin({
+            command: "setNode",
+            nodeId: String(els.nodeSelect.value || ""),
+            nodeName: selectedOpt ? selectedOpt.dataset.name : "" // <--- NEU: Name ans Plugin schicken
+        });
+    });
     els.statusCheckbox.addEventListener("change", () => {
         state.isStatusOnly = els.statusCheckbox.checked;
         updateSliderUi();
@@ -172,8 +175,7 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
     };
     websocket.onmessage = (evt) => {
         const msg = JSON.parse(evt.data);
-        if (msg.event === "sendToPropertyInspector" && msg.payload?.type === "status") applyBackendStatus(msg.payload);
-        else if (msg.payload?.type === "peak") {
+        if (msg.event === "sendToPropertyInspector" && msg.payload?.type === "status") applyBackendStatus(msg.payload); else if (msg.payload?.type === "peak") {
             applyBackendStatus({state: msg.payload.state});
             updateMeter();
         }
