@@ -79,9 +79,6 @@ function buildTileFrame({fill = "#141414", outerStroke = "#2f2f2f", innerStroke 
     ].join("");
 }
 
-// -------------------------------------------------------------------------
-// NEUES SPLIT-FADER DESIGN (Nahtlose Rahmen & FARBE AUS PIPEWEAVER!)
-// -------------------------------------------------------------------------
 function buildSplitFaderSvg(actionType, state, settings, accentColor) {
     const available = Boolean(state.available);
     const volumePercent = clampInt(state.volume, 0, 100, 0);
@@ -89,7 +86,6 @@ function buildSplitFaderSvg(actionType, state, settings, accentColor) {
     const muted = Boolean(state.muted);
     const isTop = actionType === "increaseBy";
 
-    // 1. Hintergrund / Button-Rahmen
     let frameElements = [];
     frameElements.push(
         `<defs>`,
@@ -119,7 +115,6 @@ function buildSplitFaderSvg(actionType, state, settings, accentColor) {
     }
     const frame = frameElements.join("");
 
-    // 2. Slider Bahn
     const trackX = 42;
     const trackW = 16;
     const topTrackY = 24;
@@ -127,7 +122,6 @@ function buildSplitFaderSvg(actionType, state, settings, accentColor) {
     const virtualY = ((100 - volumePercent) / 100) * 240;
     const darkGrey = "#111111";
 
-    // HIER WIRD NUN DIE FARBE ZUGEWIESEN:
     const activeTrackColor = muted ? "#e74c3c" : accentColor;
 
     let trackElements = [];
@@ -147,7 +141,6 @@ function buildSplitFaderSvg(actionType, state, settings, accentColor) {
         }
     }
 
-    // 3. Slider Knob
     let knobElement = "";
     if (available) {
         const knobW = 44;
@@ -170,7 +163,6 @@ function buildSplitFaderSvg(actionType, state, settings, accentColor) {
         }
     }
 
-    // 4. LED Meter
     const meterElements = [];
     if (available) {
         const activeSegments = Math.round((currentPeakLevel / 100) * 11);
@@ -199,7 +191,6 @@ function buildSplitFaderSvg(actionType, state, settings, accentColor) {
         }
     }
 
-    // 5. Kleines Icon unten
     let iconElement = "";
     if (!isTop) {
         const cx = 72;

@@ -14,6 +14,7 @@ module.exports = {
         accentColor: "#00d2ff",
         stepPercent: 0,
         isStatusOnly: false,
+        peakAmplifier: 1,
         volume: 50,
         muted: false,
         peakLevel: 0

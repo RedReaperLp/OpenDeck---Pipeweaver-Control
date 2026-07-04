@@ -9,6 +9,7 @@ const state = {
     nodeId: "",
     stepPercent: 0,
     isStatusOnly: false,
+    globalTrackAmp: 1, // <--- Speichert den globalen Wert
     volume: 0,
     peakLevel: 0,
     muted: false,
@@ -24,29 +25,19 @@ const els = {
     stepRow: document.getElementById("stepRow"),
     stepSlider: document.getElementById("stepSlider"),
     stepValue: document.getElementById("stepValue"),
+    ampRow: document.getElementById("ampRow"),
+    ampSlider: document.getElementById("ampSlider"),
+    ampValue: document.getElementById("ampValue"),
     volumeValue: document.getElementById("volumeValue"),
     muteValue: document.getElementById("muteValue"),
     meterFill: document.getElementById("meterFill"),
     status: document.getElementById("status")
 };
 
-function isValidHexColor(value) {
-    return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value.trim());
-}
-
-function clampPercent(value) {
-    const n = Number(value);
-    return !Number.isFinite(n) ? 0 : Math.max(0, Math.min(100, Math.round(n)));
-}
-
-function clampStep(value) {
-    const n = Number(value);
-    return !Number.isFinite(n) ? 0 : Math.max(-30, Math.min(30, Math.round(n)));
-}
-
-function normalizeHexColor(value, fallback = "#00d2ff") {
-    return !isValidHexColor(value) ? fallback : value.trim().toLowerCase();
-}
+function isValidHexColor(value) { return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value.trim()); }
+function clampPercent(value) { const n = Number(value); return !Number.isFinite(n) ? 0 : Math.max(0, Math.min(100, Math.round(n))); }
+function clampStep(value) { const n = Number(value); return !Number.isFinite(n) ? 0 : Math.max(-30, Math.min(30, Math.round(n))); }
+function normalizeHexColor(value, fallback = "#00d2ff") { return !isValidHexColor(value) ? fallback : value.trim().toLowerCase(); }
 
 function resolveActionString() {
     if (state.isStatusOnly) return "Nur Status-Anzeige";
@@ -55,9 +46,7 @@ function resolveActionString() {
     return `Leiser (Untere Taste)`;
 }
 
-function updateStatus(text) {
-    els.status.textContent = text;
-}
+function updateStatus(text) { els.status.textContent = text; }
 
 function updateSliderUi() {
     const step = clampStep(state.stepPercent);
@@ -67,12 +56,23 @@ function updateSliderUi() {
     els.stepSlider.value = String(step);
     els.stepSlider.style.setProperty("--step-progress", `${progress}%`);
 
-    if (step === 0) els.stepValue.textContent = "Toggle"; else if (step > 0) els.stepValue.textContent = `+${step}%`; else els.stepValue.textContent = `${step}%`;
+    if (step === 0) els.stepValue.textContent = "Toggle";
+    else if (step > 0) els.stepValue.textContent = `+${step}%`;
+    else els.stepValue.textContent = `${step}%`;
 
     els.actionLabel.textContent = `Aktion: ${resolveActionString()}`;
 
     els.stepRow.classList.toggle("hidden", state.isStatusOnly);
     els.statusCheckbox.checked = state.isStatusOnly;
+
+    // --- Amp Slider Update ---
+    els.ampRow.classList.toggle("hidden", !state.nodeId);
+
+    const ampMin = 1, ampMax = 10;
+    const ampProgress = ((state.globalTrackAmp - ampMin) / (ampMax - ampMin)) * 100;
+    els.ampSlider.value = String(state.globalTrackAmp);
+    els.ampSlider.style.setProperty("--step-progress", `${ampProgress}%`);
+    els.ampValue.textContent = `${Number(state.globalTrackAmp).toFixed(1)}x`;
 }
 
 function updateTheme() {
@@ -93,7 +93,7 @@ function renderNodes() {
     for (const node of state.devices) {
         const opt = document.createElement("option");
         opt.value = String(node.id);
-        opt.dataset.name = node.name; // <--- NEU: Den Namen am Element speichern
+        opt.dataset.name = node.name;
         opt.textContent = `[${String(node.kind).toUpperCase()}] ${node.name}${node.isDefault ? " (Default)" : ""}`;
         els.nodeSelect.appendChild(opt);
     }
@@ -108,6 +108,11 @@ function sendToPlugin(payload) {
 
 function applyBackendStatus(payload) {
     if (Array.isArray(payload.devices)) state.devices = payload.devices;
+
+    if (payload.globalTrackAmp !== undefined) {
+        state.globalTrackAmp = payload.globalTrackAmp;
+    }
+
     if (payload.settings) {
         state.nodeId = String(payload.settings.nodeId || "");
         state.stepPercent = clampStep(payload.settings.stepPercent);
@@ -133,7 +138,7 @@ function wireEvents() {
         sendToPlugin({
             command: "setNode",
             nodeId: String(els.nodeSelect.value || ""),
-            nodeName: selectedOpt ? selectedOpt.dataset.name : "" // <--- NEU: Name ans Plugin schicken
+            nodeName: selectedOpt ? selectedOpt.dataset.name : ""
         });
     });
     els.statusCheckbox.addEventListener("change", () => {
@@ -146,12 +151,15 @@ function wireEvents() {
         updateSliderUi();
         sendToPlugin({command: "setFlags", isStatusOnly: state.isStatusOnly, stepPercent: state.stepPercent});
     });
+    els.ampSlider.addEventListener("input", () => {
+        state.globalTrackAmp = Number(els.ampSlider.value) || 1;
+        updateSliderUi();
+        sendToPlugin({command: "setTrackAmp", nodeId: state.nodeId, peakAmplifier: state.globalTrackAmp});
+    });
 }
 
 function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
     uuid = inUUID;
-
-    // Initiales Laden der gespeicherten Werte
     if (inActionInfo) {
         try {
             const actionInfo = JSON.parse(inActionInfo);
@@ -164,8 +172,7 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
                 updateTheme();
                 updateSliderUi();
             }
-        } catch (e) {
-        }
+        } catch (e) {}
     }
 
     websocket = new WebSocket(`ws://127.0.0.1:${inPort}`);

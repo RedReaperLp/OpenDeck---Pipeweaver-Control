@@ -29,7 +29,7 @@
     h1 { margin: 0 0 2px; font-size: 14px; font-weight: 700; letter-spacing: 0.02em; }
     .subtitle { margin: 0 0 14px; font-size: 12px; color: #c5c7cd; }
     .row { display: grid; gap: 8px; margin-bottom: 13px; }
-    .hidden { display: none; opacity: 0.5; pointer-events: none; }
+    .hidden { display: none !important; }
 
     label, .sectionLabel { font-size: 12px; color: #d7d8dc; }
     select, input[type="color"], input[type="range"] { width: 100%; }
@@ -78,6 +78,15 @@
       <div id="stepValue" class="value">Toggle</div>
     </div>
   </div>
+
+  <div id="ampRow" class="row hidden">
+    <label for="ampSlider">Globaler Spur-Amplifier (Beeinflusst Fader-Balken)</label>
+    <div class="line">
+      <input id="ampSlider" type="range" min="1" max="10" step="0.5" value="1" />
+      <div id="ampValue" class="value">1.0x</div>
+    </div>
+  </div>
+
   <div class="row">
     <label>Aktueller Pegel</label>
     <div class="line">

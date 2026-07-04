@@ -1,43 +1,45 @@
 #!/usr/bin/env node
 "use strict";
-//
-// const fs = require("node:fs");
-// const path = require("node:path");
-//
-// // --- START: LOGGING IN DATEI UMLEITEN ---
-// const logFilePath = path.join(__dirname, "debug.log");
-// const logStream = fs.createWriteStream(logFilePath, { flags: "a" });
-//
-// function formatLogMsg(level, args) {
-//   const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(" ");
-//   return `[${new Date().toISOString()}] [${level}] ${msg}\n`;
-// }
-//
-// const origLog = console.log;
-// const origError = console.error;
-//
-// console.log = function (...args) {
-//   logStream.write(formatLogMsg("INFO", args));
-//   origLog.apply(console, args);
-// };
-// console.error = function (...args) {
-//   logStream.write(formatLogMsg("ERROR", args));
-//   origError.apply(console, args);
-// };
-//
-// console.log("=========================================");
-// console.log("PLUGIN GESTARTET");
-// console.log("=========================================");
-// --- ENDE: LOGGING ---
 
 const config = require("./config");
 const audio = require("./audio-service");
 const renderer = require("./svg-renderer");
 const opendeck = require("./opendeck-client");
 const peakPoll = require("./poll-node-peak-level");
-
-// WICHTIG: Dies war im letzten Log nicht geladen!
 const pipeweaver = require("./pipeweaver-client");
+
+const fs = require("node:fs");
+const path = require("node:path");
+
+// --- Globaler Speicher für Spur-Einstellungen ---
+const trackSettingsPath = path.join(__dirname, "track-settings.json");
+let trackSettings = {};
+
+try {
+  if (fs.existsSync(trackSettingsPath)) {
+    trackSettings = JSON.parse(fs.readFileSync(trackSettingsPath, "utf8"));
+  }
+} catch (e) {
+  console.error("Fehler beim Laden der Track-Settings", e);
+}
+
+function getTrackAmp(nodeId) {
+  if (!nodeId) return 1;
+  return trackSettings[String(nodeId)]?.peakAmplifier || 1;
+}
+
+function setTrackAmp(nodeId, amp) {
+  if (!nodeId) return;
+  const id = String(nodeId);
+  if (!trackSettings[id]) trackSettings[id] = {};
+  trackSettings[id].peakAmplifier = Number(amp) || 1;
+  try {
+    fs.writeFileSync(trackSettingsPath, JSON.stringify(trackSettings, null, 2), "utf8");
+  } catch (e) {
+    console.error("Fehler beim Speichern der Track-Settings", e);
+  }
+}
+// ----------------------------------------------------
 
 const contexts = new Map();
 
@@ -76,7 +78,6 @@ function getRuntime(context) {
 
 async function syncContext(runtime, context, options = { sendPi: true, sendImage: true }) {
   const devices = await audio.listAudioNodes();
-
   let selected = null;
 
   if (runtime.settings.nodeName) {
@@ -125,7 +126,8 @@ async function syncContext(runtime, context, options = { sendPi: true, sendImage
       type: "status",
       devices,
       settings: runtime.settings,
-      state: runtime.lastKnownState
+      state: runtime.lastKnownState,
+      globalTrackAmp: getTrackAmp(runtime.settings.nodeId)
     });
   }
 }
@@ -164,13 +166,13 @@ function refreshPeakVisuals() {
     const id = String(runtime.settings.nodeId);
 
     if (!polledPeaks.has(id)) {
-      // HIER NEU: runtime.settings.nodeKind als 2. Argument übergeben!
       const peak = peakPoll.pollNodePeakLevel(id, runtime.settings.nodeKind, runtime.lastKnownState.volume, runtime.lastKnownState.muted);
       polledPeaks.set(id, peak);
     }
 
-    // Peak aus dem Cache zuweisen
-    runtime.lastKnownState.peakLevel = polledPeaks.get(id);
+    const basePeak = polledPeaks.get(id);
+    const amp = getTrackAmp(id);
+    runtime.lastKnownState.peakLevel = Math.min(100, Math.max(0, Math.round(basePeak * amp)));
 
     opendeck.setImage(context, renderer.buildButtonImage(resolveActionType(runtime.settings), runtime.settings, runtime.lastKnownState));
     opendeck.sendToPropertyInspector("com.opendeck.pipewire.mixer", context, {
@@ -204,7 +206,7 @@ async function onMessage(message) {
       } else if (cmd === "setNode") {
         runtime.settings = mergeSettings(runtime.settings, {
           nodeId: message.payload?.nodeId,
-          nodeName: message.payload?.nodeName // <--- NEU: Name abspeichern
+          nodeName: message.payload?.nodeName
         });
         opendeck.setSettings(context, runtime.settings);
         await syncContext(runtime, context, { sendPi: true, sendImage: true });
@@ -215,6 +217,8 @@ async function onMessage(message) {
         });
         opendeck.setSettings(context, runtime.settings);
         await syncContext(runtime, context, { sendPi: true, sendImage: true });
+      } else if (cmd === "setTrackAmp") {
+        setTrackAmp(message.payload?.nodeId, message.payload?.peakAmplifier);
       }
       break;
 
