@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = {
-    UUID_MIXER: "com.opendeck.pipewire.mixer",
+    UUID_MIXER: "de.redreaperlp.opendeck.mixer",
 
     WPCTL_TIMEOUT_MS: 3000,
     POLL_INTERVAL_MS: 2500,

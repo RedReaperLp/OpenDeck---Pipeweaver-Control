@@ -16,7 +16,7 @@
   ],
   "Actions": [
     {
-      "UUID": "com.opendeck.pipewire.mixer",
+      "UUID": "de.redreaperlp.opendeck.mixer",
       "Name": "PipeWire Mixer",
       "Tooltip": "Steuert Lautstaerke, Mute oder zeigt den Pegel einer PipeWire-Spur",
       "PropertyInspectorPath": "propertyinspector/inspector.html",
@@ -32,7 +32,7 @@
       ]
     },
     {
-      "UUID": "com.opendeck.pipewire.target_mute",
+      "UUID": "de.redreaperlp.opendeck.target_mute",
       "Name": "PipeWeaver Output Mute",
       "Tooltip": "Muted oder unmuted einen PipeWeaver Ausgabe-Kanal",
       "PropertyInspectorPath": "propertyinspector/inspector.html",
@@ -48,7 +48,7 @@
       ]
     },
     {
-      "UUID": "com.opendeck.pipewire.target_toggle",
+      "UUID": "de.redreaperlp.opendeck.target_toggle",
       "Name": "PipeWeaver Output Switch",
       "Tooltip": "Toggelt den Standard-Ausgabe-Kanal in PipeWeaver",
       "PropertyInspectorPath": "propertyinspector/inspector.html",

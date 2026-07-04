@@ -80,7 +80,7 @@ function mergeSettings(current, incoming) {
 function getRuntime(context, action) {
   if (!contexts.has(context)) {
     contexts.set(context, {
-      action: action || "com.opendeck.pipewire.mixer",
+      action: action || "de.redreaperlp.opendeck.mixer",
       settings: { ...config.defaultSettings },
       lastKnownState: {
         available: false,
@@ -142,9 +142,9 @@ function getDeviceForId(id) {
 }
 
 async function syncContext(runtime, context, options = { sendPi: true, sendImage: true }) {
-  const isMixer = runtime.action === "com.opendeck.pipewire.mixer";
-  const isTargetMute = runtime.action === "com.opendeck.pipewire.target_mute";
-  const isTargetToggle = runtime.action === "com.opendeck.pipewire.target_toggle";
+  const isMixer = runtime.action === "de.redreaperlp.opendeck.mixer";
+  const isTargetMute = runtime.action === "de.redreaperlp.opendeck.target_mute";
+  const isTargetToggle = runtime.action === "de.redreaperlp.opendeck.target_toggle";
 
   debugLog(`syncContext: context=${context}, action=${runtime.action}, targetId=${runtime.settings.targetId}`);
 
@@ -298,9 +298,9 @@ async function syncContext(runtime, context, options = { sendPi: true, sendImage
 }
 
 async function applyKeyAction(runtime) {
-  const isMixer = runtime.action === "com.opendeck.pipewire.mixer";
-  const isTargetMute = runtime.action === "com.opendeck.pipewire.target_mute";
-  const isTargetToggle = runtime.action === "com.opendeck.pipewire.target_toggle";
+  const isMixer = runtime.action === "de.redreaperlp.opendeck.mixer";
+  const isTargetMute = runtime.action === "de.redreaperlp.opendeck.target_mute";
+  const isTargetToggle = runtime.action === "de.redreaperlp.opendeck.target_toggle";
 
   debugLog(`applyKeyAction: action=${runtime.action}`);
 
@@ -372,7 +372,7 @@ function refreshPeakVisuals() {
   const polledPeaks = new Map();
 
   for (const [context, runtime] of contexts.entries()) {
-    if (runtime.action !== "com.opendeck.pipewire.mixer") continue;
+    if (runtime.action !== "de.redreaperlp.opendeck.mixer") continue;
     if (!runtime.settings.nodeId || !runtime.lastKnownState.available) continue;
 
     let id = String(runtime.settings.nodeId);

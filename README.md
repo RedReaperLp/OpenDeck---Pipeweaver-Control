@@ -6,7 +6,7 @@ A premium OpenDeck & StreamController plugin designed to manage **PipeWire** aud
 
 ## Key Features
 
-### 1. Dynamic Audio Mixer & Fader (`com.opendeck.pipewire.mixer`)
+### 1. Dynamic Audio Mixer & Fader (`de.redreaperlp.opendeck.mixer`)
 
 * **Volume Adjustment**: Map keys/encoders to increase or decrease volume with custom step sizes.
 * **Mute Toggle**: Easily mute or unmute individual applications or devices.
@@ -21,12 +21,12 @@ A premium OpenDeck & StreamController plugin designed to manage **PipeWire** aud
 * This key dynamically controls the volume, mute, and peak levels of whatever output device is currently set as the system default.
 * If you toggle your default output (e.g. Speaker to Headphone), this key **automatically follows the switch**, showing the new device's level, peaks, and updating its color scheme instantly.
 
-# OpenDeck---Pipeweaver-Control## 3. Output Channel Muting (`com.opendeck.pipewire.target_mute`)
+### 3. Output Channel Muting (`de.redreaperlp.opendeck.target_mute`)
 
 * Mute or unmute specific output profile channels (e.g., *Speakers*, *Headset*, *Chat Mic*) directly via PipeWeaver's WebSocket API.
 * Clean visual indicators showing custom mute icons with a clear red slash when inactive.
 
-### 4. Output Device Toggling (`com.opendeck.pipewire.target_toggle`)
+### 4. Output Device Toggling (`de.redreaperlp.opendeck.target_toggle`)
 
 * **Dual Action Toggle**: Switches your default system output between two chosen outputs (Target A & Target B).
 * **Automatic A/B Mute Swap**: Simultaneously unmutes the active output's PipeWeaver routing profile while muting the inactive one. This ensures both *unmanaged* system audio and *matrix-routed* streamer channels redirect seamlessly.

@@ -2,7 +2,7 @@
 
 let websocket = null;
 let uuid = null;
-let actionUUID = "com.opendeck.pipewire.mixer";
+let actionUUID = "de.redreaperlp.opendeck.mixer";
 
 const state = {
     devices: [],
@@ -62,9 +62,9 @@ function resolveActionString() {
 function updateStatus(text) { els.status.textContent = text; }
 
 function updateActionVisibility() {
-    const isMixer = actionUUID === "com.opendeck.pipewire.mixer";
-    const isTargetMute = actionUUID === "com.opendeck.pipewire.target_mute";
-    const isTargetToggle = actionUUID === "com.opendeck.pipewire.target_toggle";
+    const isMixer = actionUUID === "de.redreaperlp.opendeck.mixer";
+    const isTargetMute = actionUUID === "de.redreaperlp.opendeck.target_mute";
+    const isTargetToggle = actionUUID === "de.redreaperlp.opendeck.target_toggle";
 
     els.mixerRow.classList.toggle("hidden", !isMixer);
     els.targetMuteRow.classList.toggle("hidden", !isTargetMute);
@@ -87,7 +87,7 @@ function updateActionVisibility() {
 function updateSliderUi() {
     updateActionVisibility();
 
-    const isMixer = actionUUID === "com.opendeck.pipewire.mixer";
+    const isMixer = actionUUID === "de.redreaperlp.opendeck.mixer";
     if (!isMixer) return;
 
     const step = clampStep(state.stepPercent);
@@ -127,9 +127,9 @@ function updateMeter() {
 }
 
 function renderNodes() {
-    const isMixer = actionUUID === "com.opendeck.pipewire.mixer";
-    const isTargetMute = actionUUID === "com.opendeck.pipewire.target_mute";
-    const isTargetToggle = actionUUID === "com.opendeck.pipewire.target_toggle";
+    const isMixer = actionUUID === "de.redreaperlp.opendeck.mixer";
+    const isTargetMute = actionUUID === "de.redreaperlp.opendeck.target_mute";
+    const isTargetToggle = actionUUID === "de.redreaperlp.opendeck.target_toggle";
 
     // 1. Mixer Nodes
     els.nodeSelect.innerHTML = "";
@@ -256,9 +256,9 @@ function applyBackendStatus(payload) {
     renderNodes();
     updateMeter();
 
-    const isMixer = actionUUID === "com.opendeck.pipewire.mixer";
-    const isTargetMute = actionUUID === "com.opendeck.pipewire.target_mute";
-    const isTargetToggle = actionUUID === "com.opendeck.pipewire.target_toggle";
+    const isMixer = actionUUID === "de.redreaperlp.opendeck.mixer";
+    const isTargetMute = actionUUID === "de.redreaperlp.opendeck.target_mute";
+    const isTargetToggle = actionUUID === "de.redreaperlp.opendeck.target_toggle";
 
     if (isTargetMute) {
         updateStatus(state.targetId ? "Ready (Output Mute)." : "Please select output channel.");
