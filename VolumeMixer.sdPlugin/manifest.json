@@ -30,6 +30,38 @@
           "Image": "imgs/plugin"
         }
       ]
+    },
+    {
+      "UUID": "com.opendeck.pipewire.target_mute",
+      "Name": "PipeWeaver Output Mute",
+      "Tooltip": "Muted oder unmuted einen PipeWeaver Ausgabe-Kanal",
+      "PropertyInspectorPath": "propertyinspector/inspector.html",
+      "SupportedInMultiActions": true,
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Name": "Default",
+          "Image": "imgs/plugin"
+        }
+      ]
+    },
+    {
+      "UUID": "com.opendeck.pipewire.target_toggle",
+      "Name": "PipeWeaver Output Switch",
+      "Tooltip": "Toggelt den Standard-Ausgabe-Kanal in PipeWeaver",
+      "PropertyInspectorPath": "propertyinspector/inspector.html",
+      "SupportedInMultiActions": true,
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Name": "Default",
+          "Image": "imgs/plugin"
+        }
+      ]
     }
   ]
 }

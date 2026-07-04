@@ -107,31 +107,31 @@ async function toggleNodeMute(nodeId) {
 
     const key = String(nodeId);
 
-    // Wir definieren "gemutet" als: Entweder ist das Flag gesetzt ODER die Lautstärke ist auf 0
+    // We define "effectively muted" as: Either the mute flag is set OR volume is 0
     const isEffectivelyMuted = state.muted || state.volume === 0;
 
     if (!isEffectivelyMuted) {
-        // --- MUTE VORGANG ---
+        // --- MUTE OPERATION ---
         console.log(`[VolumeMixer] Hard-Muting Node ${key} (Current Vol: ${state.volume}%)`);
 
-        // 1. Aktuelle Lautstärke merken
+        // 1. Remember current volume
         preMuteVolumes.set(key, state.volume);
 
-        // 2. Offizielles Mute-Flag setzen (Für die UI-Anzeige in pavucontrol/PipeWeaver)
+        // 2. Set official mute flag (for UI display in pavucontrol/PipeWeaver)
         await runWpctl(["set-mute", key, "1"]);
 
-        // 3. HARD MUTE: Die Lautstärke radikal auf 0% ziehen.
-        // Das unterbricht den Audiofluss zuverlässig, auch bei direkten Routings.
+        // 3. HARD MUTE: Pull volume all the way down to 0%.
+        // This ensures the audio flow is stopped reliably even for direct matrix routings.
         return runWpctl(["set-volume", key, "0%"]);
 
     } else {
-        // --- UNMUTE VORGANG ---
+        // --- UNMUTE OPERATION ---
         console.log(`[VolumeMixer] Unmuting Node ${key}`);
 
-        // 1. Offizielles Mute-Flag entfernen
+        // 1. Remove official mute flag
         await runWpctl(["set-mute", key, "0"]);
 
-        // 2. Alte Lautstärke wiederherstellen (oder 50% als Fallback)
+        // 2. Restore previous volume (fallback to 50%)
         const restoredVolume = preMuteVolumes.get(key) || 50;
         return runWpctl(["set-volume", key, `${restoredVolume}%`]);
     }

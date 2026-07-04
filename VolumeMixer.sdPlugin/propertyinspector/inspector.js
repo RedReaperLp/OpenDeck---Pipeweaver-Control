@@ -6,10 +6,15 @@ let actionUUID = "com.opendeck.pipewire.mixer";
 
 const state = {
     devices: [],
+    profileTargets: [],
+    defaultableOutputs: [],
     nodeId: "",
+    targetId: "",
+    targetIdA: "",
+    targetIdB: "",
     stepPercent: 0,
     isStatusOnly: false,
-    globalTrackAmp: 1, // <--- Speichert den globalen Wert
+    globalTrackAmp: 1,
     volume: 0,
     peakLevel: 0,
     muted: false,
@@ -20,7 +25,14 @@ const state = {
 const els = {
     body: document.body,
     actionLabel: document.getElementById("actionLabel"),
+    mixerRow: document.getElementById("mixerRow"),
     nodeSelect: document.getElementById("nodeSelect"),
+    targetMuteRow: document.getElementById("targetMuteRow"),
+    targetMuteSelect: document.getElementById("targetMuteSelect"),
+    targetToggleRow: document.getElementById("targetToggleRow"),
+    targetASelect: document.getElementById("targetASelect"),
+    targetBSelect: document.getElementById("targetBSelect"),
+    statusCheckboxRow: document.getElementById("statusCheckboxRow"),
     statusCheckbox: document.getElementById("statusCheckbox"),
     stepRow: document.getElementById("stepRow"),
     stepSlider: document.getElementById("stepSlider"),
@@ -31,6 +43,7 @@ const els = {
     volumeValue: document.getElementById("volumeValue"),
     muteValue: document.getElementById("muteValue"),
     meterFill: document.getElementById("meterFill"),
+    meterRow: document.getElementById("meterRow"),
     status: document.getElementById("status")
 };
 
@@ -40,15 +53,43 @@ function clampStep(value) { const n = Number(value); return !Number.isFinite(n) 
 function normalizeHexColor(value, fallback = "#00d2ff") { return !isValidHexColor(value) ? fallback : value.trim().toLowerCase(); }
 
 function resolveActionString() {
-    if (state.isStatusOnly) return "Nur Status-Anzeige";
+    if (state.isStatusOnly) return "Status Only";
     if (state.stepPercent === 0) return "Mute Toggle";
-    if (state.stepPercent > 0) return `Lauter (Obere Taste)`;
-    return `Leiser (Untere Taste)`;
+    if (state.stepPercent > 0) return `Volume Up (Upper Key)`;
+    return `Volume Down (Lower Key)`;
 }
 
 function updateStatus(text) { els.status.textContent = text; }
 
+function updateActionVisibility() {
+    const isMixer = actionUUID === "com.opendeck.pipewire.mixer";
+    const isTargetMute = actionUUID === "com.opendeck.pipewire.target_mute";
+    const isTargetToggle = actionUUID === "com.opendeck.pipewire.target_toggle";
+
+    els.mixerRow.classList.toggle("hidden", !isMixer);
+    els.targetMuteRow.classList.toggle("hidden", !isTargetMute);
+    els.targetToggleRow.classList.toggle("hidden", !isTargetToggle);
+
+    els.statusCheckboxRow.classList.toggle("hidden", !isMixer);
+    els.stepRow.classList.toggle("hidden", !isMixer || state.isStatusOnly);
+    els.ampRow.classList.toggle("hidden", !isMixer || !state.nodeId);
+    els.meterRow.classList.toggle("hidden", !isMixer);
+
+    if (isTargetMute) {
+        els.actionLabel.textContent = "Action: Output Channel Mute";
+    } else if (isTargetToggle) {
+        els.actionLabel.textContent = "Action: Toggle Output (Default)";
+    } else {
+        els.actionLabel.textContent = `Action: ${resolveActionString()}`;
+    }
+}
+
 function updateSliderUi() {
+    updateActionVisibility();
+
+    const isMixer = actionUUID === "com.opendeck.pipewire.mixer";
+    if (!isMixer) return;
+
     const step = clampStep(state.stepPercent);
     const min = -30, max = 30;
     const progress = ((step - min) / (max - min)) * 100;
@@ -60,9 +101,6 @@ function updateSliderUi() {
     else if (step > 0) els.stepValue.textContent = `+${step}%`;
     else els.stepValue.textContent = `${step}%`;
 
-    els.actionLabel.textContent = `Aktion: ${resolveActionString()}`;
-
-    els.stepRow.classList.toggle("hidden", state.isStatusOnly);
     els.statusCheckbox.checked = state.isStatusOnly;
 
     // --- Amp Slider Update ---
@@ -89,7 +127,19 @@ function updateMeter() {
 }
 
 function renderNodes() {
-    els.nodeSelect.innerHTML = state.devices.length ? "" : `<option value="">Keine Nodes gefunden</option>`;
+    const isMixer = actionUUID === "com.opendeck.pipewire.mixer";
+    const isTargetMute = actionUUID === "com.opendeck.pipewire.target_mute";
+    const isTargetToggle = actionUUID === "com.opendeck.pipewire.target_toggle";
+
+    // 1. Mixer Nodes
+    els.nodeSelect.innerHTML = "";
+
+    const defaultOpt = document.createElement("option");
+    defaultOpt.value = "@DEFAULT_AUDIO_SINK@";
+    defaultOpt.dataset.name = "Default Output Device (Dynamic)";
+    defaultOpt.textContent = "[DYNAMIC] Default Output Device (Follows Default)";
+    els.nodeSelect.appendChild(defaultOpt);
+
     for (const node of state.devices) {
         const opt = document.createElement("option");
         opt.value = String(node.id);
@@ -97,7 +147,78 @@ function renderNodes() {
         opt.textContent = `[${String(node.kind).toUpperCase()}] ${node.name}${node.isDefault ? " (Default)" : ""}`;
         els.nodeSelect.appendChild(opt);
     }
-    if (state.devices.some(n => String(n.id) === String(state.nodeId))) els.nodeSelect.value = String(state.nodeId);
+
+    if (state.nodeId === "@DEFAULT_AUDIO_SINK@") {
+        els.nodeSelect.value = "@DEFAULT_AUDIO_SINK@";
+    } else if (state.devices.some(n => String(n.id) === String(state.nodeId))) {
+        els.nodeSelect.value = String(state.nodeId);
+    } else if (isMixer && state.devices.length && !state.nodeId) {
+        state.nodeId = "@DEFAULT_AUDIO_SINK@";
+        els.nodeSelect.value = "@DEFAULT_AUDIO_SINK@";
+        sendToPlugin({
+            command: "setNode",
+            nodeId: state.nodeId,
+            nodeName: "Default Output Device (Dynamic)"
+        });
+    }
+
+    // 2. Profile Targets
+    els.targetMuteSelect.innerHTML = state.profileTargets.length ? "" : `<option value="">No output channels found</option>`;
+    for (const target of state.profileTargets) {
+        const opt = document.createElement("option");
+        opt.value = String(target.id);
+        opt.dataset.name = target.name;
+        opt.textContent = `${target.name} (${target.mute_state})`;
+        els.targetMuteSelect.appendChild(opt);
+    }
+    if (state.profileTargets.some(t => String(t.id) === String(state.targetId))) {
+        els.targetMuteSelect.value = String(state.targetId);
+    } else if (isTargetMute && state.profileTargets.length && !state.targetId) {
+        state.targetId = state.profileTargets[0].id;
+        els.targetMuteSelect.value = state.targetId;
+        sendToPlugin({
+            command: "setTargetMuteNode",
+            targetId: state.targetId,
+            targetName: state.profileTargets[0].name
+        });
+    }
+
+    // 3. Profile Targets for Toggle (Target A / Target B)
+    const optionsHtml = state.profileTargets.length 
+        ? state.profileTargets.map(d => `<option value="${d.id}" data-name="${d.name}">${d.name}</option>`).join("")
+        : `<option value="">No output channels found</option>`;
+
+    els.targetASelect.innerHTML = optionsHtml;
+    els.targetBSelect.innerHTML = optionsHtml;
+
+    if (state.profileTargets.some(d => String(d.id) === String(state.targetIdA))) els.targetASelect.value = String(state.targetIdA);
+    if (state.profileTargets.some(d => String(d.id) === String(state.targetIdB))) els.targetBSelect.value = String(state.targetIdB);
+
+    if (isTargetToggle && state.profileTargets.length) {
+        let changed = false;
+        if (!state.targetIdA) {
+            state.targetIdA = state.profileTargets[0].id;
+            els.targetASelect.value = state.targetIdA;
+            state.targetNameA = state.profileTargets[0].name;
+            changed = true;
+        }
+        if (!state.targetIdB) {
+            const second = state.profileTargets[1] || state.profileTargets[0];
+            state.targetIdB = second.id;
+            els.targetBSelect.value = second.id;
+            state.targetNameB = second.name;
+            changed = true;
+        }
+        if (changed) {
+            sendToPlugin({
+                command: "setTargetToggleNodes",
+                targetIdA: state.targetIdA,
+                targetNameA: state.targetNameA,
+                targetIdB: state.targetIdB,
+                targetNameB: state.targetNameB
+            });
+        }
+    }
 }
 
 function sendToPlugin(payload) {
@@ -108,6 +229,8 @@ function sendToPlugin(payload) {
 
 function applyBackendStatus(payload) {
     if (Array.isArray(payload.devices)) state.devices = payload.devices;
+    if (Array.isArray(payload.profileTargets)) state.profileTargets = payload.profileTargets;
+    if (Array.isArray(payload.defaultableOutputs)) state.defaultableOutputs = payload.defaultableOutputs;
 
     if (payload.globalTrackAmp !== undefined) {
         state.globalTrackAmp = payload.globalTrackAmp;
@@ -115,6 +238,9 @@ function applyBackendStatus(payload) {
 
     if (payload.settings) {
         state.nodeId = String(payload.settings.nodeId || "");
+        state.targetId = String(payload.settings.targetId || "");
+        state.targetIdA = String(payload.settings.targetIdA || "");
+        state.targetIdB = String(payload.settings.targetIdB || "");
         state.stepPercent = clampStep(payload.settings.stepPercent);
         state.isStatusOnly = Boolean(payload.settings.isStatusOnly);
         state.accentColor = normalizeHexColor(payload.settings.accentColor);
@@ -129,7 +255,18 @@ function applyBackendStatus(payload) {
     updateSliderUi();
     renderNodes();
     updateMeter();
-    updateStatus(state.nodeId ? (state.available ? "Bereit." : "Node nicht verfuegbar.") : "Bitte Audiospur auswaehlen.");
+
+    const isMixer = actionUUID === "com.opendeck.pipewire.mixer";
+    const isTargetMute = actionUUID === "com.opendeck.pipewire.target_mute";
+    const isTargetToggle = actionUUID === "com.opendeck.pipewire.target_toggle";
+
+    if (isTargetMute) {
+        updateStatus(state.targetId ? "Ready (Output Mute)." : "Please select output channel.");
+    } else if (isTargetToggle) {
+        updateStatus((state.targetIdA && state.targetIdB) ? "Ready (Output Toggle)." : "Please select both targets.");
+    } else {
+        updateStatus(state.nodeId ? (state.available ? "Ready." : "Node not available.") : "Please select audio track.");
+    }
 }
 
 function wireEvents() {
@@ -141,6 +278,38 @@ function wireEvents() {
             nodeName: selectedOpt ? selectedOpt.dataset.name : ""
         });
     });
+
+    els.targetMuteSelect.addEventListener("change", () => {
+        const selectedOpt = els.targetMuteSelect.options[els.targetMuteSelect.selectedIndex];
+        sendToPlugin({
+            command: "setTargetMuteNode",
+            targetId: String(els.targetMuteSelect.value || ""),
+            targetName: selectedOpt ? selectedOpt.dataset.name : ""
+        });
+    });
+
+    els.targetASelect.addEventListener("change", () => {
+        const selectedOpt = els.targetASelect.options[els.targetASelect.selectedIndex];
+        sendToPlugin({
+            command: "setTargetToggleNodes",
+            targetIdA: String(els.targetASelect.value || ""),
+            targetNameA: selectedOpt ? selectedOpt.dataset.name : "",
+            targetIdB: state.targetIdB,
+            targetNameB: state.targetNameB
+        });
+    });
+
+    els.targetBSelect.addEventListener("change", () => {
+        const selectedOpt = els.targetBSelect.options[els.targetBSelect.selectedIndex];
+        sendToPlugin({
+            command: "setTargetToggleNodes",
+            targetIdA: state.targetIdA,
+            targetNameA: state.targetNameA,
+            targetIdB: String(els.targetBSelect.value || ""),
+            targetNameB: selectedOpt ? selectedOpt.dataset.name : ""
+        });
+    });
+
     els.statusCheckbox.addEventListener("change", () => {
         state.isStatusOnly = els.statusCheckbox.checked;
         updateSliderUi();
@@ -166,6 +335,9 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
             if (actionInfo.action) actionUUID = actionInfo.action;
             if (actionInfo.payload?.settings) {
                 state.nodeId = String(actionInfo.payload.settings.nodeId || "");
+                state.targetId = String(actionInfo.payload.settings.targetId || "");
+                state.targetIdA = String(actionInfo.payload.settings.targetIdA || "");
+                state.targetIdB = String(actionInfo.payload.settings.targetIdB || "");
                 state.stepPercent = clampStep(actionInfo.payload.settings.stepPercent);
                 state.isStatusOnly = Boolean(actionInfo.payload.settings.isStatusOnly);
                 state.accentColor = normalizeHexColor(actionInfo.payload.settings.accentColor);
@@ -182,7 +354,9 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
     };
     websocket.onmessage = (evt) => {
         const msg = JSON.parse(evt.data);
-        if (msg.event === "sendToPropertyInspector" && msg.payload?.type === "status") applyBackendStatus(msg.payload); else if (msg.payload?.type === "peak") {
+        if (msg.event === "sendToPropertyInspector" && msg.payload?.type === "status") {
+            applyBackendStatus(msg.payload);
+        } else if (msg.payload?.type === "peak") {
             applyBackendStatus({state: msg.payload.state});
             updateMeter();
         }

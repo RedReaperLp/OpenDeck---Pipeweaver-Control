@@ -7,11 +7,11 @@ const peakStateByNode = new Map();
 const activeMonitors = new Map();
 
 /**
- * Mappt eine wpctl Node-ID auf die zugehörige pactl Source-ID.
+ * Maps a wpctl node ID to its corresponding pactl source ID.
  */
 function getPactlTargetId(wpctlId, nodeKind) {
     try {
-        // 1. Internen Namen über wpctl herausfinden
+        // 1. Find internal node name via wpctl
         const inspectOut = execSync(`wpctl inspect ${wpctlId}`, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
         const nameMatch = inspectOut.match(/node\.name\s*=\s*"([^"]+)"/);
 
@@ -19,12 +19,12 @@ function getPactlTargetId(wpctlId, nodeKind) {
 
         let targetName = nameMatch[1];
 
-        // Wenn es ein Lautsprecher (Sink/Stream) ist, suchen wir den Monitor-Port
+        // If it is a speaker/sink (output stream), we monitor the associated monitor port
         if (nodeKind && !String(nodeKind).includes("source")) {
             targetName += ".monitor";
         }
 
-        // 2. pactl Liste abfragen und ID extrahieren
+        // 2. Query pactl list and extract the ID
         const pactlOut = execSync(`pactl list sources short`, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
         const lines = pactlOut.split(/\r?\n/);
 
@@ -33,15 +33,15 @@ function getPactlTargetId(wpctlId, nodeKind) {
                 const idMatch = line.match(/^(\d+)\s+/);
                 if (idMatch && idMatch[1]) {
                     console.log(`[Mapper] wpctl ID ${wpctlId} ---> pactl Source ID ${idMatch[1]} (${targetName})`);
-                    return idMatch[1]; // Die echte pactl ID (z.B. 209 oder 231)
+                    return idMatch[1]; // The actual pactl ID (e.g. 209 or 231)
                 }
             }
         }
     } catch (e) {
-        console.error(`[Mapper] Fehler beim Mappen von Node ${wpctlId}:`, e.message);
+        console.error(`[Mapper] Error mapping Node ${wpctlId}:`, e.message);
     }
 
-    // Fallback auf wpctl ID, falls nichts gefunden wird
+    // Fallback to wpctl ID if nothing was found
     return wpctlId;
 }
 
@@ -51,10 +51,9 @@ class PeakMonitor {
         this.rawPeak = 0;
         this.lastPolled = Date.now();
 
-        // Holt die korrekte pactl ID für pw-record
+        // Get the correct pactl ID for pw-record
         const pactlId = getPactlTargetId(nodeId, nodeKind);
 
-        // Keine Hacks mehr! Wir nutzen einfach direkt die pactl ID
         const args = [
             "--target", String(pactlId),
             "--format=f32",
@@ -64,7 +63,7 @@ class PeakMonitor {
             "-"
         ];
 
-        console.log(`[PeakMonitor] Starte pw-record für Target ${pactlId}`);
+        console.log(`[PeakMonitor] Starting pw-record for Target ${pactlId}`);
 
         this.process = spawn("pw-record", args);
 
@@ -73,7 +72,7 @@ class PeakMonitor {
         this.process.stdout.on("data", (chunk) => {
             let offset = 0;
             if (isFirstChunk) {
-                offset = 44; // WAV Header überspringen
+                offset = 44; // Skip WAV Header
                 isFirstChunk = false;
             }
 
@@ -102,11 +101,11 @@ class PeakMonitor {
         });
 
         this.process.on("error", (err) => {
-            console.error(`[PeakMonitor] FEHLER bei Target ${pactlId}:`, err.message);
+            console.error(`[PeakMonitor] ERROR for Target ${pactlId}:`, err.message);
         });
 
         this.process.on("close", (code) => {
-            console.log(`[PeakMonitor] Stream beendet für ${pactlId} (Code ${code}).`);
+            console.log(`[PeakMonitor] Stream ended for ${pactlId} (Code ${code}).`);
         });
     }
 

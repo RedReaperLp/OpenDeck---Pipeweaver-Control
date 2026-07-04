@@ -17,6 +17,12 @@ module.exports = {
         peakAmplifier: 1,
         volume: 50,
         muted: false,
-        peakLevel: 0
+        peakLevel: 0,
+        targetId: "",
+        targetName: "",
+        targetIdA: "",
+        targetNameA: "",
+        targetIdB: "",
+        targetNameB: ""
     }
 };

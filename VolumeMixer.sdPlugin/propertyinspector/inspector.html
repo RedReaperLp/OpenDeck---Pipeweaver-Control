@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -59,20 +59,36 @@
   <h1>PipeWire Action</h1>
   <p id="actionLabel" class="subtitle">Action: Mute Toggle</p>
 
-  <div class="row">
-    <label for="nodeSelect">Audiospur / Node</label>
-    <select id="nodeSelect"><option value="">Keine Nodes gefunden</option></select>
+  <div id="mixerRow" class="row">
+    <label for="nodeSelect">Audio Track / Node</label>
+    <select id="nodeSelect"><option value="">No nodes found</option></select>
   </div>
 
-  <div class="row">
+  <div id="targetMuteRow" class="row hidden">
+    <label for="targetMuteSelect">Output Channel / Target</label>
+    <select id="targetMuteSelect"><option value="">No output channels found</option></select>
+  </div>
+
+  <div id="targetToggleRow" class="row hidden">
+    <div style="margin-bottom: 10px;">
+      <label for="targetASelect">Target A (Toggle)</label>
+      <select id="targetASelect"><option value="">No devices found</option></select>
+    </div>
+    <div>
+      <label for="targetBSelect">Target B (Toggle)</label>
+      <select id="targetBSelect"><option value="">No devices found</option></select>
+    </div>
+  </div>
+
+  <div id="statusCheckboxRow" class="row">
     <label class="checkbox-line">
       <input type="checkbox" id="statusCheckbox" />
-      Nur Status anzeigen (Keine Tastenfunktion)
+      Status Only (Disable key functions)
     </label>
   </div>
 
   <div id="stepRow" class="row">
-    <label for="stepSlider">Funktion (- für Unten, + für Oben, 0 für Toggle)</label>
+    <label for="stepSlider">Step Size (- for Down, + for Up, 0 for Mute Toggle)</label>
     <div class="line">
       <input id="stepSlider" type="range" min="-30" max="30" step="1" value="0" />
       <div id="stepValue" class="value">Toggle</div>
@@ -80,15 +96,15 @@
   </div>
 
   <div id="ampRow" class="row hidden">
-    <label for="ampSlider">Globaler Spur-Amplifier (Beeinflusst Fader-Balken)</label>
+    <label for="ampSlider">Volume Meter Amplifier</label>
     <div class="line">
       <input id="ampSlider" type="range" min="1" max="10" step="0.5" value="1" />
       <div id="ampValue" class="value">1.0x</div>
     </div>
   </div>
 
-  <div class="row">
-    <label>Aktueller Pegel</label>
+  <div id="meterRow" class="row">
+    <label>Volume Level</label>
     <div class="line">
       <div id="volumeValue" class="value">0%</div>
       <div id="muteValue" class="value">LIVE</div>
@@ -96,7 +112,7 @@
     <div class="meter"><span id="meterFill"></span></div>
   </div>
 
-  <div id="status" class="status">Warte auf Verbindung ...</div>
+  <div id="status" class="status">Waiting for connection...</div>
 </div>
 <script src="inspector.js"></script>
 </body>

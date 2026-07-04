@@ -71,6 +71,23 @@ function buildNodeIcon(settings, options) {
     return buildOldHeadphoneIcon(options);
 }
 
+function buildMiniMicrophoneIcon(cx, cy, stroke) {
+    const capsuleW = 8;
+    const capsuleH = 12;
+    const capsuleX = cx - capsuleW / 2; // 68
+    const capsuleY = cy - 8; // 110
+    const stemY = capsuleY + capsuleH; // 122
+    const baseY = cy + 8; // 126
+    return [
+        `<g fill="none" stroke="${stroke}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">`,
+        `<rect x="${capsuleX}" y="${capsuleY}" width="${capsuleW}" height="${capsuleH}" rx="4" />`,
+        `<path d="M ${cx - 7} ${stemY - 2} A 7 7 0 0 0 ${cx + 7} ${stemY - 2}" />`,
+        `<path d="M ${cx} ${stemY - 2} V ${baseY - 1}" />`,
+        `<path d="M ${cx - 5} ${baseY} H ${cx + 5}" />`,
+        `</g>`
+    ].join("");
+}
+
 function buildTileFrame({fill = "#141414", outerStroke = "#2f2f2f", innerStroke = "#575757"} = {}) {
     return [
         `<rect x="0" y="0" width="144" height="144" rx="25" fill="${fill}" />`,
@@ -195,13 +212,18 @@ function buildSplitFaderSvg(actionType, state, settings, accentColor) {
     if (!isTop) {
         const cx = 72;
         const cy = 118;
-        iconElement = [
-            `<g fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">`,
-            `<path d="M ${cx - 9} ${cy + 5} A 9 9 0 0 1 ${cx + 9} ${cy + 5}" />`,
-            `<rect x="${cx - 12}" y="${cy}" width="5" height="8" rx="2" fill="#888" />`,
-            `<rect x="${cx + 7}" y="${cy}" width="5" height="8" rx="2" fill="#888" />`,
-            `</g>`
-        ].join("");
+        const kind = String(settings?.nodeKind || "");
+        if (kind === "source" || kind === "source-endpoint") {
+            iconElement = buildMiniMicrophoneIcon(cx, cy, "#888");
+        } else {
+            iconElement = [
+                `<g fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">`,
+                `<path d="M ${cx - 9} ${cy + 5} A 9 9 0 0 1 ${cx + 9} ${cy + 5}" />`,
+                `<rect x="${cx - 12}" y="${cy}" width="5" height="8" rx="2" fill="#888" />`,
+                `<rect x="${cx + 7}" y="${cy}" width="5" height="8" rx="2" fill="#888" />`,
+                `</g>`
+            ].join("");
+        }
     }
 
     return [
@@ -240,28 +262,111 @@ function buildToggleStatusSvg(state, settings, accentColor) {
     const signalColor = muted ? "#ff2f45" : liveColor;
     const outerStroke = muted ? "#ff2f45" : "#2f2f2f";
     const innerStroke = muted ? "#ff9fa8" : hexToRgba(liveColor, 0.65);
-    const glow = muted ? hexToRgba("#ff2f45", 0.45) : hexToRgba(liveColor, 0.45);
     const percentText = `${clampInt(state.volume, 0, 100, 0)}%`;
+
+    const iconHtml = buildNodeIcon(settings, {
+        x: 40,
+        y: 20,
+        width: 64,
+        stroke: signalColor,
+        strokeWidth: 6
+    });
+
+    const muteSlash = muted 
+        ? `<path d="M35 25 L109 97" fill="none" stroke="#ff2f45" stroke-width="7" stroke-linecap="round" />`
+        : "";
 
     return [
         `<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">`,
         buildTileFrame({fill: "#121214", outerStroke, innerStroke}),
-        `<rect x="29" y="23" width="86" height="72" rx="16" fill="none" stroke="${signalColor}" stroke-width="6" />`,
-        `<rect x="33" y="27" width="78" height="64" rx="12" fill="none" stroke="${glow}" stroke-width="2" />`,
-        `<path d="M41 66L50 50L60 72L71 44L82 72L92 56L103 66" fill="none" stroke="${signalColor}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />`,
-        muted ? `<path d="M35 30L109 92" fill="none" stroke="#ff2f45" stroke-width="7" stroke-linecap="round" />` : "",
+        iconHtml,
+        muteSlash,
         `<text x="72" y="127" text-anchor="middle" font-size="23" font-weight="700" fill="#ffffff" font-family="Inter, Arial, sans-serif">${percentText}</text>`,
+        `</svg>`
+    ].join("");
+}
+
+function buildSpeakersIcon({x, y, width, stroke, strokeWidth}) {
+    const boxX = x + 0.15 * width;
+    const boxY = y + 0.05 * width;
+    const boxW = 0.7 * width;
+    const boxH = 0.9 * width;
+    return [
+        `<g fill="none" stroke="${stroke}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">`,
+        `<rect x="${boxX}" y="${boxY}" width="${boxW}" height="${boxH}" rx="8" />`,
+        `<circle cx="${x + 0.5 * width}" cy="${y + 0.35 * width}" r="${0.15 * width}" />`,
+        `<circle cx="${x + 0.5 * width}" cy="${y + 0.7 * width}" r="${0.22 * width}" />`,
+        `</g>`
+    ].join("");
+}
+
+function buildTargetMuteSvg(name, muted, accentColor) {
+    const signalColor = muted ? "#ff2f45" : accentColor;
+    const outerStroke = muted ? "#ff2f45" : "#2f2f2f";
+    const innerStroke = muted ? "#ff9fa8" : hexToRgba(accentColor, 0.65);
+    const textFill = muted ? "#a0a0a0" : "#ffffff";
+    const speakerStroke = muted ? "#ff2f45" : "#ffffff";
+
+    const speakerIcon = [
+        `<g fill="none" stroke="${speakerStroke}" stroke-width="${speakerStroke === '#ff2f45' ? 5 : 4}" stroke-linecap="round" stroke-linejoin="round">`,
+        `<path d="M46 54 H58 L78 34 V110 L58 90 H46 Z" />`,
+        !muted ? `<path d="M88 56 A 16 16 0 0 1 88 88" />` : "",
+        !muted ? `<path d="M96 46 A 28 28 0 0 1 96 98" />` : "",
+        muted ? `<path d="M40 36 L104 108" stroke="#ff2f45" stroke-width="7" stroke-linecap="round" />` : "",
+        `</g>`
+    ].join("");
+
+    return [
+        `<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">`,
+        buildTileFrame({fill: "#121214", outerStroke, innerStroke}),
+        speakerIcon,
+        `<text x="72" y="125" text-anchor="middle" font-size="14" font-weight="700" fill="${textFill}" font-family="Inter, Arial, sans-serif">${name.toUpperCase()}</text>`,
+        `</svg>`
+    ].join("");
+}
+
+function buildTargetToggleSvg(name, isDefault, accentColor) {
+    const liveColor = accentColor;
+    const outerStroke = isDefault ? liveColor : "#2f2f2f";
+    const innerStroke = isDefault ? hexToRgba(liveColor, 0.65) : "#444444";
+    const bgFill = isDefault ? "#141923" : "#121214";
+    const textFill = isDefault ? "#ffffff" : "#888888";
+    const iconStroke = isDefault ? liveColor : "#666666";
+
+    const isHeadphone = /head/i.test(name) || /phone/i.test(name) || /ear/i.test(name);
+    const icon = isHeadphone 
+        ? buildOldHeadphoneIcon({ x: 40, y: 22, width: 64, stroke: iconStroke, strokeWidth: 5 })
+        : buildSpeakersIcon({ x: 40, y: 22, width: 64, stroke: iconStroke, strokeWidth: 5 });
+
+    const checkmark = isDefault 
+        ? `<circle cx="106" cy="38" r="12" fill="${liveColor}" />` + 
+          `<path d="M100 38 L104 42 L112 34" fill="none" stroke="#121214" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />`
+        : "";
+
+    return [
+        `<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">`,
+        buildTileFrame({fill: bgFill, outerStroke, innerStroke}),
+        icon,
+        checkmark,
+        `<text x="72" y="125" text-anchor="middle" font-size="14" font-weight="700" fill="${textFill}" font-family="Inter, Arial, sans-serif">${name.toUpperCase()}</text>`,
         `</svg>`
     ].join("");
 }
 
 function buildButtonImage(actionType, settings, state) {
     const accentColor = resolveAccentColor(settings);
-    const svg = actionType === "dbStatus"
-        ? buildDbStatusSvg(state, settings)
-        : actionType === "toggleMute"
-            ? buildToggleStatusSvg(state, settings, accentColor)
-            : buildSplitFaderSvg(actionType, state, settings, accentColor);
+    let svg;
+    if (actionType === "targetMute") {
+        svg = buildTargetMuteSvg(settings.targetName || state.targetName || "Target", state.muted, accentColor);
+    } else if (actionType === "targetToggle") {
+        svg = buildTargetToggleSvg(settings.targetName || state.targetName || "Target", state.isDefault, accentColor);
+    } else if (actionType === "dbStatus") {
+        svg = buildDbStatusSvg(state, settings);
+    } else if (actionType === "toggleMute") {
+        svg = buildToggleStatusSvg(state, settings, accentColor);
+    } else {
+        svg = buildSplitFaderSvg(actionType, state, settings, accentColor);
+    }
     return `data:image/svg+xml;base64,${Buffer.from(svg, "utf8").toString("base64")}`;
 }
 
