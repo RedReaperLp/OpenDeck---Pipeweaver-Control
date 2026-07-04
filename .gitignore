@@ -89,3 +89,4 @@ http-client.private.env.json
 .idea/**/copilot.data.migration.*.xml
 
 VolumeMixer.sdPlugin/debug.log
+VolumeMixer.sdPlugin/track-settings.json
