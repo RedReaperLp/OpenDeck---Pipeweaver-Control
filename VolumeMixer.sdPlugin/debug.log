@@ -19951,3 +19951,236 @@
 [2026-07-04T21:39:58.963Z] syncContext target_mute: Target found! targetName=Headset, muted=true
 [2026-07-04T21:39:58.964Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
 [2026-07-04T21:39:58.964Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:01.447Z] PipeWeaver StatusListener triggered! Updating all contexts...
+[2026-07-04T21:40:01.447Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:01.448Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:01.448Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:01.449Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:01.450Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:01.450Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:01.450Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:01.451Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:01.452Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:01.452Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:01.452Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:01.453Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:01.458Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:01.458Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:01.459Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:01.460Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:01.461Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:01.461Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:01.462Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:01.463Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:01.465Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:01.465Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:01.465Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:01.466Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:03.959Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:03.959Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:03.960Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:03.961Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:03.962Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:03.962Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:03.962Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:03.963Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:03.963Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:03.964Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:03.964Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:03.965Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:06.459Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:06.459Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:06.460Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:06.461Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:06.462Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:06.462Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:06.462Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:06.463Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:06.464Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:06.464Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:06.464Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:06.465Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:08.960Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:08.960Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:08.960Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:08.962Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:08.962Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:08.963Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:08.963Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:08.963Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:08.964Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:08.964Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:08.965Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:08.965Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:11.448Z] PipeWeaver StatusListener triggered! Updating all contexts...
+[2026-07-04T21:40:11.448Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:11.448Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:11.448Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:11.449Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:11.450Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:11.450Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:11.450Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:11.451Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:11.452Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:11.452Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:11.452Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:11.453Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:11.460Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:11.460Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:11.461Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:11.462Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:11.464Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:11.464Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:11.464Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:11.465Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:11.466Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:11.467Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:11.467Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:11.468Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:13.960Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:13.960Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:13.960Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:13.961Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:13.962Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:13.962Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:13.962Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:13.963Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:13.964Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:13.964Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:13.964Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:13.965Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:15.257Z] PipeWeaver StatusListener triggered! Updating all contexts...
+[2026-07-04T21:40:15.257Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:15.257Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:15.257Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:15.258Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:15.259Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:15.259Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:15.259Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:15.260Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:15.261Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:15.261Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:15.261Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:15.262Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:16.460Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:16.460Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:16.460Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:16.461Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:16.462Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:16.462Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:16.462Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:16.463Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:16.464Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:16.464Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:16.464Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:16.465Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:18.960Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:18.960Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:18.960Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:18.961Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:18.962Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:18.962Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:18.962Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:18.963Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:18.964Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:18.964Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:18.964Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:18.965Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:21.447Z] PipeWeaver StatusListener triggered! Updating all contexts...
+[2026-07-04T21:40:21.447Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:21.447Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:21.448Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:21.449Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:21.450Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:21.450Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:21.450Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:21.451Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:21.452Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:21.452Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:21.452Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:21.453Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:21.460Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:21.460Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:21.461Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:21.462Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:21.463Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:21.463Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:21.464Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:21.465Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:21.466Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:21.467Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:21.467Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:21.468Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:23.961Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:23.961Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:23.961Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:23.963Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:23.964Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:23.964Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:23.964Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:23.965Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:23.966Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:23.966Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:23.966Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:23.967Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:26.461Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:26.461Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:26.461Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:26.462Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:26.463Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:26.463Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:26.463Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:26.464Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:26.465Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:26.465Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:26.465Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:26.466Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:28.961Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:28.961Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:28.961Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:28.962Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:28.963Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:28.963Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:28.963Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:28.965Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:28.966Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:28.966Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:28.966Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:28.967Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:31.448Z] PipeWeaver StatusListener triggered! Updating all contexts...
+[2026-07-04T21:40:31.448Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:31.448Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:31.448Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:31.449Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:31.450Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:31.450Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:31.450Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:31.451Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:31.452Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:31.452Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:31.452Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:31.453Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:31.461Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:31.461Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:31.462Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:31.463Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:31.465Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:31.465Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:31.465Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:31.466Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:31.468Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:31.468Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:31.468Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:31.469Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:33.961Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.0.0, action=com.opendeck.pipewire.target_toggle, targetId=
+[2026-07-04T21:40:33.961Z] syncContext target_toggle: isDefault=true, targetName=Speaker
+[2026-07-04T21:40:33.961Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.1.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:33.962Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.2.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:33.963Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.5.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFDDSNM7JKBMQVMK7BXJ3G
+[2026-07-04T21:40:33.963Z] syncContext target_mute: Target found! targetName=Speaker, muted=false
+[2026-07-04T21:40:33.963Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.6.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:33.964Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.7.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:33.965Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.10.0, action=com.opendeck.pipewire.target_mute, targetId=01KWQFSQJ2ECDR6XWAVBGWDRTW
+[2026-07-04T21:40:33.965Z] syncContext target_mute: Target found! targetName=Headset, muted=true
+[2026-07-04T21:40:33.965Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.11.0, action=com.opendeck.pipewire.mixer, targetId=
+[2026-07-04T21:40:33.966Z] syncContext: context=sd-A00SA5332PZLPT.PipeweaverCentral.Keypad.12.0, action=com.opendeck.pipewire.mixer, targetId=
