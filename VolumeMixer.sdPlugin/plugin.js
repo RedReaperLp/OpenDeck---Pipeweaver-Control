@@ -89,7 +89,9 @@ function getRuntime(context, action) {
         peakLevel: config.defaultSettings.peakLevel,
         isDefault: false,
         targetName: ""
-      }
+      },
+      syncVersion: 0,
+      visible: true
     });
   } else if (action && !contexts.get(context).action) {
     contexts.get(context).action = action;
@@ -112,7 +114,7 @@ function getProfileTargetForId(id) {
   const dev = defaultableOutputs.find(d => d.id === id);
   if (dev) {
     pt = profileTargets.find(t => {
-      return Array.isArray(t.attached_devices) && pt.attached_devices.some(ad => ad.name === dev.name);
+      return Array.isArray(t.attached_devices) && t.attached_devices.some(ad => ad.name === dev.name);
     });
     if (pt) return pt;
   }
@@ -142,11 +144,14 @@ function getDeviceForId(id) {
 }
 
 async function syncContext(runtime, context, options = { sendPi: true, sendImage: true }) {
+  if (runtime !== contexts.get(context) || !runtime.visible) return;
+  const myVersion = ++runtime.syncVersion;
+
   const isMixer = runtime.action === "de.redreaperlp.opendeck.mixer";
   const isTargetMute = runtime.action === "de.redreaperlp.opendeck.target_mute";
   const isTargetToggle = runtime.action === "de.redreaperlp.opendeck.target_toggle";
 
-  debugLog(`syncContext: context=${context}, action=${runtime.action}, targetId=${runtime.settings.targetId}`);
+  debugLog(`syncContext: context=${context}, action=${runtime.action}, targetId=${runtime.settings.targetId}, version=${myVersion}, visible=${runtime.visible}`);
 
   let devices = [];
   let profileTargets = [];
@@ -154,6 +159,10 @@ async function syncContext(runtime, context, options = { sendPi: true, sendImage
 
   if (isMixer) {
     devices = await audio.listAudioNodes();
+    if (runtime !== contexts.get(context) || !runtime.visible || myVersion !== runtime.syncVersion) {
+      debugLog(`syncContext: Aborting context=${context} - runtime mismatch, invisible, or version mismatch after listAudioNodes`);
+      return;
+    }
     let selected = null;
 
     if (runtime.settings.nodeId === "@DEFAULT_AUDIO_SINK@") {
@@ -163,7 +172,12 @@ async function syncContext(runtime, context, options = { sendPi: true, sendImage
     }
 
     if (!selected && runtime.settings.nodeId) {
-      selected = devices.find((d) => d.id === String(runtime.settings.nodeId));
+      const matchById = devices.find((d) => d.id === String(runtime.settings.nodeId));
+      if (matchById) {
+        if (!runtime.settings.nodeName || matchById.name === runtime.settings.nodeName) {
+          selected = matchById;
+        }
+      }
     }
 
     if (!selected) {
@@ -174,6 +188,10 @@ async function syncContext(runtime, context, options = { sendPi: true, sendImage
       runtime.settings.nodeName = selected.name;
 
       const nodeState = await audio.getNodeState(selected.id);
+      if (runtime !== contexts.get(context) || !runtime.visible || myVersion !== runtime.syncVersion) {
+        debugLog(`syncContext: Aborting context=${context} - runtime mismatch, invisible, or version mismatch after getNodeState`);
+        return;
+      }
       if (!nodeState) {
         runtime.settings.nodeKind = selected.kind;
         runtime.lastKnownState.available = false;
@@ -241,8 +259,22 @@ async function syncContext(runtime, context, options = { sendPi: true, sendImage
       runtime.settings.targetNameB = ptB.name;
     }
 
-    const isASelected = devA && defaultOutputId === devA.id;
-    const isBSelected = devB && defaultOutputId === devB.id;
+    // Determine selection based on mute state first (unmuted profile target is active)
+    const isAMuteUnmuted = ptA && ptA.mute_state === "Unmuted";
+    const isBMuteUnmuted = ptB && ptB.mute_state === "Unmuted";
+
+    let isASelected = false;
+    let isBSelected = false;
+
+    if (isAMuteUnmuted && !isBMuteUnmuted) {
+      isASelected = true;
+    } else if (isBMuteUnmuted && !isAMuteUnmuted) {
+      isBSelected = true;
+    } else {
+      // Fallback: match via default physical output ID in PipeWire
+      isASelected = devA && defaultOutputId === devA.id;
+      isBSelected = devB && defaultOutputId === devB.id;
+    }
 
     let targetName = "Toggle";
     let isDefault = false;
@@ -270,7 +302,11 @@ async function syncContext(runtime, context, options = { sendPi: true, sendImage
     debugLog(`syncContext target_toggle: isDefault=${isDefault}, targetName=${targetName}`);
   }
 
-  opendeck.setSettings(context, runtime.settings);
+  // Double check version, visibility, and existence once more before sending to OpenDeck
+  if (runtime !== contexts.get(context) || !runtime.visible || myVersion !== runtime.syncVersion) {
+    debugLog(`syncContext: Aborting context=${context} - runtime mismatch, invisible, or version mismatch before final write`);
+    return;
+  }
 
   if (options.sendImage) {
     let actionType;
@@ -348,9 +384,24 @@ async function applyKeyAction(runtime) {
     debugLog(`applyKeyAction target_toggle: devA=${devA?.id}, devB=${devB?.id}, ptA=${ptA?.id}, ptB=${ptB?.id}`);
     if (!devA || !devB || !ptA || !ptB) return;
 
-    const defaultOutputId = pipeweaver.getDefaultOutputId();
-    const nextDefault = (defaultOutputId === devA.id) ? devB.id : devA.id;
-    debugLog(`applyKeyAction target_toggle: currentDefault=${defaultOutputId}, nextDefault=${nextDefault}`);
+    // Determine toggle direction based on current mute states of the profile targets
+    const isAMuteUnmuted = ptA && ptA.mute_state === "Unmuted";
+    const isBMuteUnmuted = ptB && ptB.mute_state === "Unmuted";
+
+    let nextDefault;
+    if (isAMuteUnmuted && !isBMuteUnmuted) {
+      // Target A is currently active (unmuted). Toggle to Target B.
+      nextDefault = devB.id;
+    } else if (isBMuteUnmuted && !isAMuteUnmuted) {
+      // Target B is currently active (unmuted). Toggle to Target A.
+      nextDefault = devA.id;
+    } else {
+      // Fallback: use defaultOutputId from PipeWire
+      const defaultOutputId = pipeweaver.getDefaultOutputId();
+      nextDefault = (defaultOutputId === devA.id) ? devB.id : devA.id;
+    }
+
+    debugLog(`applyKeyAction target_toggle: nextDefault=${nextDefault}`);
     
     // 1. Switch default output in PipeWire
     pipeweaver.setDefaultOutput(nextDefault);
@@ -413,20 +464,28 @@ async function onMessage(message) {
   const context = message.context;
   const action = message.action;
   
-  debugLog(`onMessage: event=${message.event}, action=${action}, context=${context}`);
+  debugLog(`onMessage raw: ${JSON.stringify(message)}`);
 
   const runtime = context ? getRuntime(context, action) : null;
 
   switch (message.event) {
     case "willAppear":
-    case "didReceiveSettings":
+      if (runtime) runtime.visible = true;
       runtime.settings = mergeSettings(runtime.settings, message.payload?.settings || {});
+      runtime.lastKnownState.available = false; // Mark unavailable during sync transition
+      await syncContext(runtime, context, { sendPi: true, sendImage: true });
+      break;
+
+    case "didReceiveSettings":
+      if (runtime) runtime.visible = true;
+      runtime.settings = mergeSettings(runtime.settings, message.payload?.settings || {});
+      runtime.lastKnownState.available = false; // Mark unavailable during sync transition
       await syncContext(runtime, context, { sendPi: true, sendImage: true });
       break;
 
     case "keyUp":
       await applyKeyAction(runtime);
-      await Promise.all(Array.from(contexts.entries()).map(([ctx, rt]) => syncContext(rt, ctx, { sendPi: true, sendImage: true })));
+      await Promise.all(Array.from(contexts.entries()).filter(([_, rt]) => rt.visible).map(([ctx, rt]) => syncContext(rt, ctx, { sendPi: true, sendImage: true })));
       break;
 
     case "sendToPlugin":
@@ -439,6 +498,7 @@ async function onMessage(message) {
           nodeId: message.payload?.nodeId,
           nodeName: message.payload?.nodeName
         });
+        runtime.lastKnownState.available = false;
         opendeck.setSettings(context, runtime.settings);
         await syncContext(runtime, context, { sendPi: true, sendImage: true });
       } else if (cmd === "setTargetMuteNode") {
@@ -446,6 +506,7 @@ async function onMessage(message) {
           targetId: message.payload?.targetId,
           targetName: message.payload?.targetName
         });
+        runtime.lastKnownState.available = false;
         opendeck.setSettings(context, runtime.settings);
         await syncContext(runtime, context, { sendPi: true, sendImage: true });
       } else if (cmd === "setTargetToggleNodes") {
@@ -455,6 +516,7 @@ async function onMessage(message) {
           targetIdB: message.payload?.targetIdB,
           targetNameB: message.payload?.targetNameB
         });
+        runtime.lastKnownState.available = false;
         opendeck.setSettings(context, runtime.settings);
         await syncContext(runtime, context, { sendPi: true, sendImage: true });
       } else if (cmd === "setFlags") {
@@ -462,6 +524,7 @@ async function onMessage(message) {
           isStatusOnly: message.payload?.isStatusOnly,
           stepPercent: message.payload?.stepPercent
         });
+        runtime.lastKnownState.available = false;
         opendeck.setSettings(context, runtime.settings);
         await syncContext(runtime, context, { sendPi: true, sendImage: true });
       } else if (cmd === "setTrackAmp") {
@@ -470,7 +533,7 @@ async function onMessage(message) {
       break;
 
     case "willDisappear":
-      contexts.delete(message.context);
+      if (runtime) runtime.visible = false;
       break;
   }
 }
@@ -480,6 +543,7 @@ pipeweaver.registerStatusListener(() => {
   debugLog("PipeWeaver StatusListener triggered! Updating all contexts...");
   if (!contexts.size) return;
   for (const [context, runtime] of contexts.entries()) {
+    if (!runtime.visible) continue;
     syncContext(runtime, context, { sendPi: true, sendImage: true }).catch(err => {
       console.error("Error during real-time context sync:", err);
     });
@@ -488,7 +552,8 @@ pipeweaver.registerStatusListener(() => {
 
 setInterval(async () => {
   if (!contexts.size) return;
-  await Promise.all(Array.from(contexts.entries()).map(([context, runtime]) => syncContext(runtime, context, { sendPi: true, sendImage: true })));
+  const visibleContexts = Array.from(contexts.entries()).filter(([_, rt]) => rt.visible);
+  await Promise.all(visibleContexts.map(([context, runtime]) => syncContext(runtime, context, { sendPi: true, sendImage: true })));
 }, config.POLL_INTERVAL_MS);
 
 setInterval(() => {

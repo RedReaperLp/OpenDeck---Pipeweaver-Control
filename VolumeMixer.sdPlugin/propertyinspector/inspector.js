@@ -9,6 +9,7 @@ const state = {
     profileTargets: [],
     defaultableOutputs: [],
     nodeId: "",
+    nodeName: "",
     targetId: "",
     targetIdA: "",
     targetIdB: "",
@@ -148,9 +149,19 @@ function renderNodes() {
         els.nodeSelect.appendChild(opt);
     }
 
+    if (state.nodeId && state.nodeId !== "@DEFAULT_AUDIO_SINK@" && !state.devices.some(n => String(n.id) === String(state.nodeId))) {
+        const offlineOpt = document.createElement("option");
+        offlineOpt.value = String(state.nodeId);
+        offlineOpt.dataset.name = state.nodeName || "Unknown Node";
+        offlineOpt.textContent = `[OFFLINE] ${state.nodeName || "Unknown Node"}`;
+        els.nodeSelect.appendChild(offlineOpt);
+    }
+
     if (state.nodeId === "@DEFAULT_AUDIO_SINK@") {
         els.nodeSelect.value = "@DEFAULT_AUDIO_SINK@";
     } else if (state.devices.some(n => String(n.id) === String(state.nodeId))) {
+        els.nodeSelect.value = String(state.nodeId);
+    } else if (state.nodeId) {
         els.nodeSelect.value = String(state.nodeId);
     } else if (isMixer && state.devices.length && !state.nodeId) {
         state.nodeId = "@DEFAULT_AUDIO_SINK@";
@@ -238,6 +249,7 @@ function applyBackendStatus(payload) {
 
     if (payload.settings) {
         state.nodeId = String(payload.settings.nodeId || "");
+        state.nodeName = String(payload.settings.nodeName || "");
         state.targetId = String(payload.settings.targetId || "");
         state.targetIdA = String(payload.settings.targetIdA || "");
         state.targetIdB = String(payload.settings.targetIdB || "");
@@ -335,6 +347,7 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
             if (actionInfo.action) actionUUID = actionInfo.action;
             if (actionInfo.payload?.settings) {
                 state.nodeId = String(actionInfo.payload.settings.nodeId || "");
+                state.nodeName = String(actionInfo.payload.settings.nodeName || "");
                 state.targetId = String(actionInfo.payload.settings.targetId || "");
                 state.targetIdA = String(actionInfo.payload.settings.targetIdA || "");
                 state.targetIdB = String(actionInfo.payload.settings.targetIdB || "");
