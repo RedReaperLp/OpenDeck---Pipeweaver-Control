@@ -135,27 +135,55 @@ function renderNodes() {
     // 1. Mixer Nodes
     els.nodeSelect.innerHTML = "";
 
+    const dynamicGroup = document.createElement("optgroup");
+    dynamicGroup.label = "Dynamics";
+
+    const outputsGroup = document.createElement("optgroup");
+    outputsGroup.label = "Physical Outputs (Sinks)";
+
+    const inputsGroup = document.createElement("optgroup");
+    inputsGroup.label = "Physical Inputs (Sources)";
+
+    const appsGroup = document.createElement("optgroup");
+    appsGroup.label = "Applications (Streams)";
+
+    const offlineGroup = document.createElement("optgroup");
+    offlineGroup.label = "Offline / Unavailable";
+
     const defaultOpt = document.createElement("option");
     defaultOpt.value = "@DEFAULT_AUDIO_SINK@";
     defaultOpt.dataset.name = "Default Output Device (Dynamic)";
-    defaultOpt.textContent = "[DYNAMIC] Default Output Device (Follows Default)";
-    els.nodeSelect.appendChild(defaultOpt);
+    defaultOpt.textContent = "Default Output Device (Follows Default)";
+    dynamicGroup.appendChild(defaultOpt);
 
     for (const node of state.devices) {
         const opt = document.createElement("option");
         opt.value = String(node.id);
         opt.dataset.name = node.name;
-        opt.textContent = `[${String(node.kind).toUpperCase()}] ${node.name}${node.isDefault ? " (Default)" : ""}`;
-        els.nodeSelect.appendChild(opt);
+        opt.textContent = `${node.name}${node.isDefault ? " (Default)" : ""}`;
+
+        if (node.kind === "sink" || node.kind === "sink-endpoint") {
+            outputsGroup.appendChild(opt);
+        } else if (node.kind === "source" || node.kind === "source-endpoint") {
+            inputsGroup.appendChild(opt);
+        } else if (node.kind === "stream") {
+            appsGroup.appendChild(opt);
+        }
     }
 
     if (state.nodeId && state.nodeId !== "@DEFAULT_AUDIO_SINK@" && !state.devices.some(n => String(n.id) === String(state.nodeId))) {
         const offlineOpt = document.createElement("option");
         offlineOpt.value = String(state.nodeId);
         offlineOpt.dataset.name = state.nodeName || "Unknown Node";
-        offlineOpt.textContent = `[OFFLINE] ${state.nodeName || "Unknown Node"}`;
-        els.nodeSelect.appendChild(offlineOpt);
+        offlineOpt.textContent = `${state.nodeName || "Unknown Node"}`;
+        offlineGroup.appendChild(offlineOpt);
     }
+
+    if (dynamicGroup.children.length > 0) els.nodeSelect.appendChild(dynamicGroup);
+    if (outputsGroup.children.length > 0) els.nodeSelect.appendChild(outputsGroup);
+    if (inputsGroup.children.length > 0) els.nodeSelect.appendChild(inputsGroup);
+    if (appsGroup.children.length > 0) els.nodeSelect.appendChild(appsGroup);
+    if (offlineGroup.children.length > 0) els.nodeSelect.appendChild(offlineGroup);
 
     if (state.nodeId === "@DEFAULT_AUDIO_SINK@") {
         els.nodeSelect.value = "@DEFAULT_AUDIO_SINK@";

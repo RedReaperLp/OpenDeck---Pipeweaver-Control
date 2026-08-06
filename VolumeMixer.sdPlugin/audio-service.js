@@ -68,7 +68,12 @@ async function listAudioNodes() {
         const isDefault = Boolean(idMatch[1]);
         let name = idMatch[3].replace(/\s*\[vol:[^\]]+\]\s*$/i, "").trim();
 
-        if (sectionKinds[section] === "stream" && /[<>]/.test(name)) continue;
+        if (sectionKinds[section] === "stream") {
+            if (/[<>]/.test(name)) continue;
+            const lowerName = name.toLowerCase();
+            if (lowerName.startsWith("monitor_") || lowerName.startsWith("output_") || lowerName.startsWith("input_")) continue;
+            if (/_(fl|fr|rl|rr|fc|lfe|sl|sr)(\b|_)/i.test(name)) continue;
+        }
         if (!name) name = `Node ${id}`;
 
         nodes.push({ id, kind: sectionKinds[section], name, isDefault });
