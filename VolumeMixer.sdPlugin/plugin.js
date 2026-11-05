@@ -114,7 +114,11 @@ function getProfileTargetForId(id) {
   const dev = defaultableOutputs.find(d => d.id === id);
   if (dev) {
     pt = profileTargets.find(t => {
-      return Array.isArray(t.attached_devices) && t.attached_devices.some(ad => ad.name === dev.name);
+      if (!Array.isArray(t.attached_devices)) return false;
+      return t.attached_devices.some(ad => {
+        const adName = typeof ad === "string" ? ad : (ad.name || ad.description || ad.id);
+        return adName && (adName === dev.name || adName === dev.description || adName === dev.id);
+      });
     });
     if (pt) return pt;
   }
@@ -132,15 +136,37 @@ function getDeviceForId(id) {
   let dev = defaultableOutputs.find(d => d.id === id);
   if (dev) return dev;
 
-  // 2. Match via profile ID (find device whose name matches pt.attached_devices[0].name)
+  // 2. Match via profile ID
   const profileTargets = pipeweaver.getProfileTargets();
-  const pt = profileTargets.find(t => t.id === id);
-  if (pt && Array.isArray(pt.attached_devices) && pt.attached_devices.length > 0) {
-    dev = defaultableOutputs.find(d => d.name === pt.attached_devices[0].name);
+  const pt = profileTargets.find(t => t.id === id || t.name.toLowerCase() === id.toLowerCase());
+  if (pt) {
+    if (Array.isArray(pt.attached_devices) && pt.attached_devices.length > 0) {
+      for (const ad of pt.attached_devices) {
+        const adName = typeof ad === "string" ? ad : (ad.name || ad.description || ad.id);
+        if (!adName) continue;
+        dev = defaultableOutputs.find(d => 
+          d.name === adName || 
+          d.description === adName || 
+          (d.id && d.id === adName) ||
+          (ad.name && (d.name === ad.name || d.description === ad.name)) ||
+          (ad.description && (d.name === ad.description || d.description === ad.description))
+        );
+        if (dev) return dev;
+      }
+    }
+    dev = defaultableOutputs.find(d => 
+      d.name.toLowerCase() === pt.name.toLowerCase() || 
+      (d.description && d.description.toLowerCase() === pt.name.toLowerCase())
+    );
     if (dev) return dev;
   }
 
-  return null;
+  // 3. Fallback: match id directly by name in defaultableOutputs
+  dev = defaultableOutputs.find(d => 
+    d.name.toLowerCase() === id.toLowerCase() || 
+    (d.description && d.description.toLowerCase() === id.toLowerCase())
+  );
+  return dev || null;
 }
 
 async function syncContext(runtime, context, options = { sendPi: true, sendImage: true }) {
@@ -376,45 +402,45 @@ async function applyKeyAction(runtime) {
     debugLog(`applyKeyAction target_toggle: targetIdA=${targetIdA}, targetIdB=${targetIdB}`);
     if (!targetIdA || !targetIdB) return;
 
-    const devA = getDeviceForId(targetIdA);
-    const devB = getDeviceForId(targetIdB);
     const ptA = getProfileTargetForId(targetIdA);
     const ptB = getProfileTargetForId(targetIdB);
+    const devA = getDeviceForId(targetIdA);
+    const devB = getDeviceForId(targetIdB);
 
     debugLog(`applyKeyAction target_toggle: devA=${devA?.id}, devB=${devB?.id}, ptA=${ptA?.id}, ptB=${ptB?.id}`);
-    if (!devA || !devB || !ptA || !ptB) return;
+    if (!ptA || !ptB) return;
 
     // Determine toggle direction based on current mute states of the profile targets
-    const isAMuteUnmuted = ptA && ptA.mute_state === "Unmuted";
-    const isBMuteUnmuted = ptB && ptB.mute_state === "Unmuted";
+    const isAMuteUnmuted = ptA.mute_state === "Unmuted";
+    const isBMuteUnmuted = ptB.mute_state === "Unmuted";
 
-    let nextDefault;
+    let switchToB = false;
     if (isAMuteUnmuted && !isBMuteUnmuted) {
       // Target A is currently active (unmuted). Toggle to Target B.
-      nextDefault = devB.id;
+      switchToB = true;
     } else if (isBMuteUnmuted && !isAMuteUnmuted) {
       // Target B is currently active (unmuted). Toggle to Target A.
-      nextDefault = devA.id;
+      switchToB = false;
     } else {
-      // Fallback: use defaultOutputId from PipeWire
+      // Fallback: check current default output
       const defaultOutputId = pipeweaver.getDefaultOutputId();
-      nextDefault = (defaultOutputId === devA.id) ? devB.id : devA.id;
+      if (devA && defaultOutputId === devA.id) {
+        switchToB = true;
+      } else {
+        switchToB = false;
+      }
     }
 
-    debugLog(`applyKeyAction target_toggle: nextDefault=${nextDefault}`);
-    
-    // 1. Switch default output in PipeWire
-    pipeweaver.setDefaultOutput(nextDefault);
-
-    // 2. Simultaneously toggle mute status of corresponding profile targets
-    if (nextDefault === devA.id) {
-      pipeweaver.setTargetMute(ptA.id, "Unmuted");
-      pipeweaver.setTargetMute(ptB.id, "Muted");
-      debugLog("applyKeyAction target_toggle: Unmuted A, Muted B");
-    } else {
+    if (switchToB) {
+      if (devB) pipeweaver.setDefaultOutput(devB.id);
       pipeweaver.setTargetMute(ptA.id, "Muted");
       pipeweaver.setTargetMute(ptB.id, "Unmuted");
       debugLog("applyKeyAction target_toggle: Muted A, Unmuted B");
+    } else {
+      if (devA) pipeweaver.setDefaultOutput(devA.id);
+      pipeweaver.setTargetMute(ptA.id, "Unmuted");
+      pipeweaver.setTargetMute(ptB.id, "Muted");
+      debugLog("applyKeyAction target_toggle: Unmuted A, Muted B");
     }
   }
 }
@@ -423,6 +449,7 @@ function refreshPeakVisuals() {
   const polledPeaks = new Map();
 
   for (const [context, runtime] of contexts.entries()) {
+    if (!runtime.visible) continue;
     if (runtime.action !== "de.redreaperlp.opendeck.mixer") continue;
     if (!runtime.settings.nodeId || !runtime.lastKnownState.available) continue;
 

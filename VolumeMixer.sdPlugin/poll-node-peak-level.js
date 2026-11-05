@@ -56,6 +56,7 @@ class PeakMonitor {
 
         const args = [
             "--target", String(pactlId),
+            "--raw",
             "--format=f32",
             "--rate=8000",
             "--channels=1",
@@ -67,19 +68,25 @@ class PeakMonitor {
 
         this.process = spawn("pw-record", args);
 
-        let isFirstChunk = true;
+        let remainder = Buffer.alloc(0);
 
         this.process.stdout.on("data", (chunk) => {
-            let offset = 0;
-            if (isFirstChunk) {
-                offset = 44; // Skip WAV Header
-                isFirstChunk = false;
+            let buffer = chunk;
+            if (remainder.length > 0) {
+                buffer = Buffer.concat([remainder, chunk]);
+                remainder = Buffer.alloc(0);
+            }
+
+            const unaligned = buffer.length % 4;
+            if (unaligned > 0) {
+                remainder = buffer.subarray(buffer.length - unaligned);
+                buffer = buffer.subarray(0, buffer.length - unaligned);
             }
 
             let maxAbs = 0;
 
-            for (let i = offset; i <= chunk.length - 4; i += 4) {
-                const sample = Math.abs(chunk.readFloatLE(i));
+            for (let i = 0; i <= buffer.length - 4; i += 4) {
+                const sample = Math.abs(buffer.readFloatLE(i));
                 if (sample > maxAbs) {
                     maxAbs = sample;
                 }
